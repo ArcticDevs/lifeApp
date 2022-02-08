@@ -41,28 +41,7 @@
       </div>
     </b-card>
     <div class="row mx-0 mt-5">
-      <div class="col-12 col-md-4 col-xl-3 mb-3">
-        <router-link :to="$route.path +'/details'">
-        <b-card class="level_card">
-          <div class="level_card_content pr-0">
-            <h2>Density</h2>
-            <div class="descriptionContainer">
-              <p>
-                Lorem ipsum, or lipsum as it is sometimes known, is dummy text
-                used in laying out print, graphic or web designs. The passage is
-                attributed to an unknown typesetter in the .
-              </p>
-            </div>
-          </div>
-
-          <img
-            src="@/assets/images/movies/density.png"
-            alt=""
-            class="level_card_icon"
-          />
-        </b-card>
-        </router-link>
-      </div>
+      
       <div
         class="col-12 col-md-4 col-xl-3 mb-3"
         v-for="(topic, topicIndex) in topics"
@@ -70,15 +49,15 @@
       >
         <b-card class="level_card">
           <div class="level_card_content pr-0">
-            <h2>{{ topic.topicName }}</h2>
+            <h2>{{ topic.title }}</h2>
             <div class="descriptionContainer">
               <p>
-                {{ topic.topicDescription }}
+                {{ topic.description }}
               </p>
             </div>
           </div>
 
-          <img :src="topic.topicImg" alt="" class="level_card_icon" />
+          <img :src="topic.media.url" :alt="topic.media.name" class="level_card_icon" />
         </b-card>
       </div>
       <div class="col-12 col-md-4 col-xl-3 mb-3">
@@ -186,6 +165,8 @@
 
 <script>
 import BCardCode from "@core/components/b-card-code";
+import axios from "axios";
+
 import {
   BBreadcrumb,
   BCard,
@@ -220,6 +201,7 @@ export default {
   data() {
     return {
       levelId: this.$route.params.level,
+      subjectId: this.$route.params.subject,
       topicDescription:
         "Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print, graphic or web designs. The passage is attributed to an unknown typesetter in the .",
 
@@ -238,7 +220,7 @@ export default {
           active: true,
         },
       ],
-      
+
       topicForm: {
         topicName: "",
         topicDescription: "",
@@ -248,6 +230,18 @@ export default {
       imageNameKey: 0,
     };
   },
+  created(){
+    console.log(this.subjectId);
+    axios
+      .post("admin/v1/movies/topics",{level_id : this.levelId})
+      .then(({ data }) => {
+        this.topics = data.topics;
+       })
+      .catch((error) => {
+        console.log(error);
+      });
+  },
+
   methods: {
     onImageSelected(e) {
       let self = this;

@@ -3,7 +3,7 @@
     <b-breadcrumb class="breadcrumb-slash" :items="breadcrumbs" />
     <b-card class="subNameContainer">
       <h1 class="subName">
-        {{ subjectName[0].toUpperCase() + subjectName.slice(1) }}
+        {{ subjectName }}
       </h1>
       <img
         src="@/assets/images/missions/mission_icon.png"
@@ -20,13 +20,11 @@
         <b-card class="level_card bg_orange">
           <div class="row h-100">
             <div class="level_card_content col-8 col-md-6 col-lg-8 pr-0">
-              <h2>{{ level.levelName }}</h2>
+              <h2>{{ level.level }}</h2>
               <p>
-                {{ level.levelDescription }}
+                {{ level.description }}
               </p>
-              <router-link
-                :to="'/movies/' + subjectName + '/' + level.levelId"
-              >
+              <router-link :to="'/movies/' + subjectId + '/' + level.id">
                 <div class="StartBtn">Start</div>
               </router-link>
             </div>
@@ -107,7 +105,7 @@
               <b-button
                 variant="primary"
                 class="addBtn"
-                @click.prevent="addLevel"
+                @click.prevent="addLevel()"
                 >Add</b-button
               >
             </div>
@@ -120,6 +118,7 @@
 
 <script>
 import BCardCode from "@core/components/b-card-code";
+import axios from "axios";
 import {
   BBreadcrumb,
   BCard,
@@ -151,7 +150,8 @@ export default {
   },
   data() {
     return {
-      subjectName: this.$route.params.subject,
+      subjectId: this.$route.params.subject,
+    
       breadcrumbs: [
         {
           text: "Movies",
@@ -179,32 +179,58 @@ export default {
       levelDescription: "",
       totalRewards: "",
       totalTopic: "",
-      levels: [
-        {
-          levelName: "Level 1",
-          levelId:"level-1",
-          levelDescription:
-            "Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print, graphic or web designs. The passage is attributed to an unknown typesetter in the .",
-          totalRewards: "",
-          totalTopic: "",
-        },
-      ],
+      levels: [],
+      subjectName:"",
     };
+  },
+  created() {
+    console.log(this.subjectId);
+    axios
+      .get("/admin/v1/movies/subjects")
+      .then(({ data }) => {
+        console.log(data.subjects);
+        data.subjects.forEach((element) => {
+          if (element.id == this.subjectId) {
+              this.subjectName= element.name;
+            this.levels = element.levels;
+           
+            console.log( this.levels);
+          }
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   },
   methods: {
     addLevel() {
       this.levels.push({
+        subject_id: this.subjectId,
         levelName: this.levelName,
         levelDescription: this.levelDescription,
         totalRewards: this.totalRewards,
         totalTopic: this.totalTopic,
       });
-      this.$bvModal.hide("add-level-modal");
-
-      this.levelName = "";
-      this.levelDescription = "";
-      this.totalRewards = "";
-      this.totalTopic = "";
+      var levelData = {
+        subject_id: this.subjectId,
+        level: this.levelName,
+        description: this.levelDescription,
+        total_rewards: this.totalRewards,
+        total_question: this.totalTopic,
+      };
+      axios
+        .post("/admin/v1/movies/create-level", levelData)
+        .then(({ data }) => {
+          console.log(data);
+          this.$bvModal.hide("add-level-modal");
+          this.levelName = "";
+          this.levelDescription = "";
+          this.totalRewards = "";
+          this.totalTopic = "";
+        })
+        .catch(({ error }) => {
+          console.log(error);
+        });
     },
   },
 };

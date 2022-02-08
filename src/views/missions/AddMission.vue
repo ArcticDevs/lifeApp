@@ -287,7 +287,7 @@ import Ripple from "vue-ripple-directive";
 import { ValidationProvider, ValidationObserver } from "vee-validate";
 import { required, email, integer } from "@validations";
 import { data } from "vue-echarts";
-import swal from "";
+// import swal from "";
 // import store from "@/store";
 // import missionStoreModule from "./missionStoreModule";
 export default {
@@ -402,14 +402,18 @@ export default {
                 .post("admin/v1/missions/add-question", questionFromData)
                 .then((response) => {
                   console.log(response);
-                  self.$swal({
-                    title: "Mission added!",
-                    icon: "success",
-                    customClass: {
-                      confirmButton: "btn btn-primary",
-                    },
-                    buttonsStyling: false,
-                  });
+                  self
+                    .$swal({
+                      title: "Mission added!",
+                      icon: "success",
+                      customClass: {
+                        confirmButton: "btn btn-primary",
+                      },
+                      buttonsStyling: false,
+                    })
+                    .then(() => {
+                      self.$router.push("/mission/list");
+                    });
                 })
                 .catch((err) => {
                   console.log(err);

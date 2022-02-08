@@ -8,6 +8,7 @@ import '@/libs/sweet-alerts'
 import '@/libs/vue-select'
 import '@/libs/tour'
 import '@/@fake-db/db'
+import '@/@fake-db/db'
 
 import { ModalPlugin, ToastPlugin } from 'bootstrap-vue'
 
@@ -32,12 +33,12 @@ axios.defaults.baseURL = "https://dev.gappubobo.com"
 
 // axios.defaults.timeout = 3000;
 // Add a request interceptor
-axios.interceptors.request.use(function (config) {
-  let accessToken = localStorage.getItem('accessToken');
+axios.interceptors.request.use( (config)=> {
+  const accessToken = localStorage.getItem('accessToken');
   config.headers.Authorization = `Bearer ${accessToken}`;
 
   return config;
-});
+},error => Promise.reject(error));
 
 
 // Axios Mock Adapter

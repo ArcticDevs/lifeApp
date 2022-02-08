@@ -13,17 +13,19 @@
                 v-for="(subject, subIndex) in subjects"
                 :key="subIndex"
               >
-              <router-link :to="subject.toLowerCase()">
+              
+                <router-link :to="'/movies/'+subject.id">
+                  <b-card class="mission_card text-center">
+                    <img
+                      src="@/assets/images/missions/mission_icon.png"
+                      alt=""
+                      class="mission_icon"
+                    />
+                  
 
-                <b-card class="mission_card text-center">
-                  <img
-                    src="@/assets/images/missions/mission_icon.png"
-                    alt=""
-                    class="mission_icon"
-                  />
-                  <h3 class="mt-2">{{ subject }}</h3>
-                </b-card>
-              </router-link>
+                    <h3 class="mt-2">{{ subject.name }}</h3>
+                  </b-card>
+                </router-link>
               </div>
               <div class="col-12 col-sm-6 col-md-4 col-lg-3 h-100">
                 <!-- Add subject card -->
@@ -55,7 +57,10 @@
                       placeholder="Subject Name"
                     />
                     <div class="text-center w-100 mt-3">
-                      <b-button variant="primary" class="addBtn" @click.prevent="addSubject"
+                      <b-button
+                        variant="primary"
+                        class="addBtn"
+                        @click.prevent="addSubject()"
                         >Add</b-button
                       >
                     </div>
@@ -74,6 +79,7 @@
 
 <script>
 import BCardCode from "@core/components/b-card-code";
+import axios from "axios";
 import {
   BBreadcrumb,
   BCard,
@@ -127,14 +133,38 @@ export default {
         { isActive: true, age: 38, first_name: "Jami", last_name: "Carney" },
       ],
       subjectName: "",
-      subjects: ["Science", "English"],
+      subjects: [],
     };
+  },
+  created() {
+    axios
+      .get("/admin/v1/movies/subjects")
+      .then((response) => {
+        console.log(response.data.subjects);
+        this.subjects =  response.data.subjects;
+        console.log(this.subjects)
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   },
   methods: {
     addSubject() {
       this.subjects.push(this.subjectName);
-      this.$bvModal.hide('add-subject-modal');
-      this.subjectName=""
+      var subjectData = {
+        name: this.subjectName,
+      };
+      axios
+        .post("/admin/v1/movies/create-subject", subjectData)
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      this.$bvModal.hide("add-subject-modal");
+      this.subjectName = "";
     },
   },
 };
