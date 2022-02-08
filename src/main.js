@@ -1,16 +1,4 @@
-import Vue from 'vue'
-import { ToastPlugin, ModalPlugin } from 'bootstrap-vue'
-import VueCompositionAPI from '@vue/composition-api'
-
-import i18n from '@/libs/i18n'
-import router from './router'
-import store from './store'
-import App from './App.vue'
-
-// Global Components
 import './global-components'
-
-// 3rd party plugins
 import '@axios'
 import '@/libs/acl'
 import '@/libs/portal-vue'
@@ -19,9 +7,41 @@ import '@/libs/toastification'
 import '@/libs/sweet-alerts'
 import '@/libs/vue-select'
 import '@/libs/tour'
+import '@/@fake-db/db'
+
+import { ModalPlugin, ToastPlugin } from 'bootstrap-vue'
+
+import App from './App.vue'
+import Vue from 'vue'
+import VueCompositionAPI from '@vue/composition-api'
+import axios from 'axios'
+import i18n from '@/libs/i18n'
+import router from './router'
+import store from './store'
+
+// Global Components
+
+
+// 3rd party plugins
+
+
+
+
+
+axios.defaults.baseURL = "https://dev.gappubobo.com"
+
+axios.defaults.timeout = 3000;
+// Add a request interceptor
+axios.interceptors.request.use(function (config) {
+  let accessToken = localStorage.getItem('accessToken');
+  config.headers.Authorization = `Bearer ${accessToken}`;
+
+  return config;
+});
+
 
 // Axios Mock Adapter
-import '@/@fake-db/db'
+
 
 // BSV Plugin Registration
 Vue.use(ToastPlugin)

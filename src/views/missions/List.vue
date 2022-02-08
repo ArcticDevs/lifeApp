@@ -37,7 +37,7 @@
 <script>
 import BCardCode from "@core/components/b-card-code";
 import { BBreadcrumb, BCard, BRow, BCol, BButton, BLink } from "bootstrap-vue";
-
+import axios from "axios";
 export default {
   components: {
     BBreadcrumb,
@@ -64,6 +64,18 @@ export default {
       ],
     };
   },
+  created() {
+    axios
+      .get(
+        "/admin/v1/missions/list"
+      )
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  },
 };
 </script>
 
@@ -71,7 +83,7 @@ export default {
 .mission_card {
   border-radius: 20px;
   height: 200px;
-  box-shadow:0 2px 5px rgb(167, 166, 166) !important;
+  box-shadow: 0 2px 5px rgb(167, 166, 166) !important;
 
   .mission_icon {
     height: 110px;

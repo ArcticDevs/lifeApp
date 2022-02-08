@@ -4,10 +4,8 @@
       <!-- Brand logo-->
       <b-link class="brand-logo align-items-center">
         <!-- <vuexy-logo /> -->
-        <img src="/logo.png" alt="" height="35px">
-        <h2 class="brand-text text-dark ml-1 mb-0">
-          Life App
-        </h2>
+        <img src="/logo.png" alt="" height="35px" />
+        <h2 class="brand-text text-dark ml-1 mb-0">Life App</h2>
       </b-link>
       <!-- /Brand logo-->
 
@@ -17,31 +15,15 @@
         class="d-none d-lg-flex align-items-center py-5 px-0 bg-white"
       >
         <div class="w-100 d-lg-flex align-items-center justify-content-center">
-          <b-img
-            fluid
-            :src="imgUrl"
-            alt="Login V2"
-            class="w-100"
-          />
+          <b-img fluid :src="imgUrl" alt="Login V2" class="w-100" />
         </div>
       </b-col>
       <!-- /Left Text-->
 
       <!-- Login-->
-      <b-col
-        lg="4"
-        class="d-flex align-items-center auth-bg p-lg-5"
-      >
-        <b-col
-          sm="8"
-          md="6"
-          lg="12"
-          class="px-xl-2 mx-auto"
-        >
-          <b-card-title
-            class="mb-1 font-weight-bold"
-            title-tag="h2"
-          >
+      <b-col lg="4" class="d-flex align-items-center auth-bg p-lg-5">
+        <b-col sm="8" md="6" lg="12" class="px-xl-2 mx-auto">
+          <b-card-title class="mb-1 font-weight-bold" title-tag="h2">
             Welcome to Life App! 👋
           </b-card-title>
           <b-card-text class="mb-2">
@@ -70,19 +52,10 @@
                     </b-alert>-->
 
           <!-- form -->
-          <validation-observer
-            ref="loginForm"
-            #default="{ invalid }"
-          >
-            <b-form
-              class="auth-login-form mt-2"
-              @submit.prevent="login"
-            >
+          <validation-observer ref="loginForm" #default="{ invalid }">
+            <b-form class="auth-login-form mt-2" @submit.prevent="login">
               <!-- email -->
-              <b-form-group
-                label="Email"
-                label-for="login-email"
-              >
+              <b-form-group label="Email" label-for="login-email">
                 <validation-provider
                   #default="{ errors }"
                   name="Email"
@@ -155,7 +128,7 @@
                 type="submit"
                 block
                 :disabled="invalid"
-                style="background-color: #FF9501 !important"
+                style="background-color: #ff9501 !important"
               >
                 Sign in
               </b-button>
@@ -198,8 +171,8 @@
 
 <script>
 /* eslint-disable global-require */
-import { ValidationProvider, ValidationObserver } from 'vee-validate'
-import VuexyLogo from '@core/layouts/components/Logo.vue'
+import { ValidationProvider, ValidationObserver } from "vee-validate";
+import VuexyLogo from "@core/layouts/components/Logo.vue";
 import {
   BRow,
   BCol,
@@ -216,17 +189,17 @@ import {
   BButton,
   BAlert,
   VBTooltip,
-} from 'bootstrap-vue'
-import { required, email } from '@validations'
-import { togglePasswordVisibility } from '@core/mixins/ui/forms'
-import ToastificationContent from '@core/components/toastification/ToastificationContent.vue'
-import useJwt from '@/auth/jwt/useJwt'
-import store from '@/store/index'
+} from "bootstrap-vue";
+import { required, email } from "@validations";
+import { togglePasswordVisibility } from "@core/mixins/ui/forms";
+import ToastificationContent from "@core/components/toastification/ToastificationContent.vue";
+import useJwt from "@/auth/jwt/useJwt";
+import store from "@/store/index";
 /* import { getHomeRouteForLoggedInUser } from '@/auth/utils' */
-
+import axios from "@axios";
 export default {
   directives: {
-    'b-tooltip': VBTooltip,
+    "b-tooltip": VBTooltip,
   },
   components: {
     BRow,
@@ -250,82 +223,83 @@ export default {
   mixins: [togglePasswordVisibility],
   data() {
     return {
-      status: '',
-      password: '',
-      userEmail: '',
-      sideImg: require('@/assets/images/main_banner.jpg'),
+      status: "",
+      password: "",
+      userEmail: "",
+      sideImg: require("@/assets/images/main_banner.jpg"),
 
       // validation rules
       required,
       email,
-    }
+    };
   },
   computed: {
     passwordToggleIcon() {
-      return this.passwordFieldType === 'password' ? 'EyeIcon' : 'EyeOffIcon'
+      return this.passwordFieldType === "password" ? "EyeIcon" : "EyeOffIcon";
     },
     imgUrl() {
-      if (store.state.appConfig.layout.skin === 'dark') {
+      if (store.state.appConfig.layout.skin === "dark") {
         // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-        this.sideImg = require('@/assets/images/main_banner.jpg')
-        return this.sideImg
+        this.sideImg = require("@/assets/images/main_banner.jpg");
+        return this.sideImg;
       }
-      return this.sideImg
+      return this.sideImg;
     },
   },
   methods: {
     login() {
-      this.$refs.loginForm.validate()
-        .then(success => {
-          if (success) {
-            useJwt
-              .login({
-                email: this.userEmail,
-                password: this.password,
-              })
-              .then(response => {
-                const { errors } = response.data
-                if (errors) {
+      this.$refs.loginForm.validate().then((success) => {
+        if (success) {
+          useJwt
+            .login({
+              email: this.userEmail,
+              password: this.password,
+            })
+            .then((response) => {
+              const { errors } = response.data;
+              if (errors) {
+                this.$toast({
+                  component: ToastificationContent,
+                  position: "top-right",
+                  props: {
+                    title: errors.title,
+                    icon: errors.icon,
+                    variant: errors.type,
+                    text: errors.message,
+                  },
+                });
+              } else {
+                const { admin } = response.data;
+                useJwt.setToken(response.data.accessToken);
+                axios.defaults.headers.common[
+                  "Authorization"
+                ] = `Bearer ${response.data.accessToken}`;
+                // useJwt.setRefreshToken(response.data.refreshToken)
+                console.log(useJwt.getToken);
+                localStorage.setItem("userData", JSON.stringify(admin));
+                this.$ability.update(admin.ability);
+                /* this.$store.commit("app-ecommerce/UPDATE_CART_ITEMS_COUNT", 5); */
+                this.$router.push("/dashboard").then(() => {
                   this.$toast({
                     component: ToastificationContent,
-                    position: 'top-right',
+                    position: "top-right",
                     props: {
-                      title: errors.title,
-                      icon: errors.icon,
-                      variant: errors.type,
-                      text: errors.message,
+                      title: `Welcome ${admin.name || admin.username}`,
+                      icon: "CoffeeIcon",
+                      variant: "success",
+                      text: `You have successfully logged in as ${admin.role}. Now you can start to explore!`,
                     },
-                  })
-                } else {
-                  const { admin } = response.data
-                  useJwt.setToken(response.data.accessToken)
-                  useJwt.setRefreshToken(response.data.refreshToken)
-                  console.log(useJwt.getToken);
-                  localStorage.setItem('userData', JSON.stringify(admin))
-                  this.$ability.update(admin.ability)
-                  /* this.$store.commit("app-ecommerce/UPDATE_CART_ITEMS_COUNT", 5); */
-                  this.$router.push('/dashboard')
-                    .then(() => {
-                      this.$toast({
-                        component: ToastificationContent,
-                        position: 'top-right',
-                        props: {
-                          title: `Welcome ${admin.name || admin.username}`,
-                          icon: 'CoffeeIcon',
-                          variant: 'success',
-                          text: `You have successfully logged in as ${admin.role}. Now you can start to explore!`,
-                        },
-                      })
-                    })
-                }
-              })
-          }
-        })
+                  });
+                });
+              }
+            });
+        }
+      });
     },
   },
-}
+};
 </script>
 
 <style lang="scss">
-    @import "@core/scss/vue/pages/page-auth.scss";
+@import "@core/scss/vue/pages/page-auth.scss";
 </style>
