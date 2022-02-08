@@ -30,7 +30,7 @@ import store from './store'
 
 axios.defaults.baseURL = "https://dev.gappubobo.com"
 
-axios.defaults.timeout = 3000;
+// axios.defaults.timeout = 3000;
 // Add a request interceptor
 axios.interceptors.request.use(function (config) {
   let accessToken = localStorage.getItem('accessToken');

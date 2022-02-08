@@ -95,7 +95,7 @@
                     v-for="(lang, langIndex) in langs"
                     :key="langIndex"
                     :title="lang"
-                    v-model="locale"
+                    @click="locale= lang"
                   >
                     <b-card-text>
                       <!-- images -->
@@ -314,7 +314,7 @@ export default {
         images: [{}],
         document: { file: null, name: "" },
       },
-      locale: "Hindi",
+      locale: "",
       required,
       email,
       integer,
@@ -335,6 +335,7 @@ export default {
         },
       ],
       langs: ["Hindi", "English", "Marathi"],
+      missionId: "",
     };
   },
 
@@ -347,37 +348,63 @@ export default {
         mission_type: this.missionForm.SelectedMissionType,
       };
       console.log(postData);
-
+      let self = this
       console.log(postData);
       axios
         .post(`/admin/v1/missions/create`, postData)
         .then((response) => {
           console.log(response);
+
+          self.missionId = response.data.data;
+          var imageFormData = new FormData();
+          var questionFromData = new FormData();
+
+          if(this.locale === "Hindi")
+          {
+            imageFormData.append("locale", "Hn");
+            questionFromData.append("locale", "Hn");
+          }
+          else if(this.locale === "English"){
+            imageFormData.append("locale", "En");
+            questionFromData.append("locale", "En");
+
+          }
+          else if(this.locale === "Marathi"){
+            imageFormData.append("locale", "Ma");
+            questionFromData.append("locale", "Ma");
+
+          }
+          imageFormData.append("mission_id", self.missionId);
+          questionFromData.append("mission_id", self.missionId);
+          questionFromData.append("question_title" ,self.missionForm.question)
+          questionFromData.append("question_document" ,self.missionForm.document)
+          
+          self.missionForm.images.forEach((element, i) => {
+            console.log(element);
+            imageFormData.append("image", element.img);
+          });
+
+          axios
+            .post("/admin/v1/missions/add-mission-image", imageFormData)
+            .then((response) => {
+              console.log(response);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+
+             axios
+            .post("admin/v1/missions/add-question", questionFromData)
+            .then((response) => {
+              console.log(response);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
         })
         .catch((err) => {
           console.log(err);
         });
-
-      var imageFormData = new FormData();
-      this.missionForm.images.forEach((element, i) => {
-        console.log(element[i].img)
-        imageFormData.append("images[]", element[i]);
-      });
-      console.log([...imageFormData]);
-      console.log(this.locale);
-      var postImage = {
-        locale: this.locale,
-        image: this.imageFormData,
-      };
-      console.log(postImage)
-      // axios
-      //   .post("admin/v1/missions/add-mission-image", postImage)
-      //   .then((response) => {
-      //     console.log(response);
-      //   })
-      //   .catch((err) => {
-      //     console.log(err);
-      //   });
     },
     onImageSelected(e, index) {
       let self = this;
