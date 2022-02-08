@@ -95,16 +95,12 @@
                     v-for="(lang, langIndex) in langs"
                     :key="langIndex"
                     :title="lang"
+                    v-model="locale"
                   >
                     <b-card-text>
                       <!-- images -->
                       <b-form-row
-                        class="
-                          w-100
-                          d-flex
-                          justify-content-center
-                          align-items-center
-                        "
+                        class="w-100 d-flex justify-content-center align-items-center"
                       >
                         <b-col cols="12" md="8" class="mb-2 mr-md-3">
                           <label>Images</label>
@@ -186,12 +182,7 @@
 
                       <!-- Upload document -->
                       <b-form-row
-                        class="
-                          w-100
-                          d-flex
-                          justify-content-center
-                          align-items-center
-                        "
+                        class="w-100 d-flex justify-content-center align-items-center"
                       >
                         <b-col cols="12" md="8" class="mb-2 mr-md-3">
                           <label>Upload Document</label>
@@ -323,6 +314,7 @@ export default {
         images: [{}],
         document: { file: null, name: "" },
       },
+      locale: "Hindi",
       required,
       email,
       integer,
@@ -365,6 +357,27 @@ export default {
         .catch((err) => {
           console.log(err);
         });
+
+      var imageFormData = new FormData();
+      this.missionForm.images.forEach((element, i) => {
+        console.log(element[i].img)
+        imageFormData.append("images[]", element[i]);
+      });
+      console.log([...imageFormData]);
+      console.log(this.locale);
+      var postImage = {
+        locale: this.locale,
+        image: this.imageFormData,
+      };
+      console.log(postImage)
+      // axios
+      //   .post("admin/v1/missions/add-mission-image", postImage)
+      //   .then((response) => {
+      //     console.log(response);
+      //   })
+      //   .catch((err) => {
+      //     console.log(err);
+      //   });
     },
     onImageSelected(e, index) {
       let self = this;
