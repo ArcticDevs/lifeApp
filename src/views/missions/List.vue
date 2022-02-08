@@ -6,8 +6,8 @@
       <div class="row">
         <div
           class="col-12 col-sm-6 col-md-4 col-lg-3 h-100"
-          v-for="n in 2"
-          :key="n"
+          v-for="(mission,i) in missions"
+          :key="i"
         >
           <b-card class="mission_card text-center">
             <img
@@ -15,7 +15,7 @@
               alt=""
               class="mission_icon"
             />
-            <h3 class="mt-2">Mission {{ n }}</h3>
+            <h3 class="mt-2">{{ mission.name }}</h3>
           </b-card>
         </div>
         <div class="col-12 col-sm-6 col-md-4 col-lg-3 h-100">
@@ -62,6 +62,7 @@ export default {
           active: true,
         },
       ],
+      missions:[]
     };
   },
   created() {
@@ -71,6 +72,7 @@ export default {
       )
       .then((response) => {
         console.log(response);
+        this.missions = response.data.missions
       })
       .catch((error) => {
         console.log(error);

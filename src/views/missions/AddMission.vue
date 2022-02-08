@@ -95,12 +95,17 @@
                     v-for="(lang, langIndex) in langs"
                     :key="langIndex"
                     :title="lang"
-                    @click="locale= lang"
+                    @click="locale = lang"
                   >
                     <b-card-text>
                       <!-- images -->
                       <b-form-row
-                        class="w-100 d-flex justify-content-center align-items-center"
+                        class="
+                          w-100
+                          d-flex
+                          justify-content-center
+                          align-items-center
+                        "
                       >
                         <b-col cols="12" md="8" class="mb-2 mr-md-3">
                           <label>Images</label>
@@ -182,7 +187,12 @@
 
                       <!-- Upload document -->
                       <b-form-row
-                        class="w-100 d-flex justify-content-center align-items-center"
+                        class="
+                          w-100
+                          d-flex
+                          justify-content-center
+                          align-items-center
+                        "
                       >
                         <b-col cols="12" md="8" class="mb-2 mr-md-3">
                           <label>Upload Document</label>
@@ -277,6 +287,7 @@ import Ripple from "vue-ripple-directive";
 import { ValidationProvider, ValidationObserver } from "vee-validate";
 import { required, email, integer } from "@validations";
 import { data } from "vue-echarts";
+import swal from "";
 // import store from "@/store";
 // import missionStoreModule from "./missionStoreModule";
 export default {
@@ -314,7 +325,7 @@ export default {
         images: [{}],
         document: { file: null, name: "" },
       },
-      locale: "",
+      locale: "Hindi",
       required,
       email,
       integer,
@@ -348,7 +359,7 @@ export default {
         mission_type: this.missionForm.SelectedMissionType,
       };
       console.log(postData);
-      let self = this
+      let self = this;
       console.log(postData);
       axios
         .post(`/admin/v1/missions/create`, postData)
@@ -359,26 +370,24 @@ export default {
           var imageFormData = new FormData();
           var questionFromData = new FormData();
 
-          if(this.locale === "Hindi")
-          {
+          if (this.locale === "Hindi") {
             imageFormData.append("locale", "Hn");
             questionFromData.append("locale", "Hn");
-          }
-          else if(this.locale === "English"){
+          } else if (this.locale === "English") {
             imageFormData.append("locale", "En");
             questionFromData.append("locale", "En");
-
-          }
-          else if(this.locale === "Marathi"){
+          } else if (this.locale === "Marathi") {
             imageFormData.append("locale", "Ma");
             questionFromData.append("locale", "Ma");
-
           }
           imageFormData.append("mission_id", self.missionId);
           questionFromData.append("mission_id", self.missionId);
-          questionFromData.append("question_title" ,self.missionForm.question)
-          questionFromData.append("question_document" ,self.missionForm.document)
-          
+          questionFromData.append("question_title", self.missionForm.question);
+          questionFromData.append(
+            "question_document",
+            self.missionForm.document.file
+          );
+
           self.missionForm.images.forEach((element, i) => {
             console.log(element);
             imageFormData.append("image", element.img);
@@ -388,15 +397,23 @@ export default {
             .post("/admin/v1/missions/add-mission-image", imageFormData)
             .then((response) => {
               console.log(response);
-            })
-            .catch((err) => {
-              console.log(err);
-            });
 
-             axios
-            .post("admin/v1/missions/add-question", questionFromData)
-            .then((response) => {
-              console.log(response);
+              axios
+                .post("admin/v1/missions/add-question", questionFromData)
+                .then((response) => {
+                  console.log(response);
+                  self.$swal({
+                    title: "Mission added!",
+                    icon: "success",
+                    customClass: {
+                      confirmButton: "btn btn-primary",
+                    },
+                    buttonsStyling: false,
+                  });
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
             })
             .catch((err) => {
               console.log(err);
