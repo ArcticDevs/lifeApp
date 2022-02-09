@@ -12,15 +12,7 @@
           </p>
         </div>
         <div
-          class="
-            col-12 col-md-7 col-lg-6
-            mt-2 mt-lg-0
-            pr-xl-4
-            d-flex
-            flex-wrap flex-lg-nowrap
-            align-items-end
-            justify-content-lg-end
-          "
+          class="col-12 col-md-7 col-lg-6 mt-2 mt-lg-0 pr-xl-4 d-flex flex-wrap flex-lg-nowrap align-items-end justify-content-lg-end"
         >
           <span class="ml-1 ml-lg-0"
             ><img src="@/assets/images/movies/svg/Star.svg" class="mr-1" />Total
@@ -41,7 +33,6 @@
       </div>
     </b-card>
     <div class="row mx-0 mt-5">
-      
       <div
         class="col-12 col-md-4 col-xl-3 mb-3"
         v-for="(topic, topicIndex) in topics"
@@ -57,19 +48,17 @@
             </div>
           </div>
 
-          <img :src="topic.media.url" :alt="topic.media.name" class="level_card_icon" />
+          <img
+            :src="topic.media.url"
+            :alt="topic.media.name"
+            class="level_card_icon"
+          />
         </b-card>
       </div>
       <div class="col-12 col-md-4 col-xl-3 mb-3">
         <b-card class="new_level_card" v-b-modal.add-topic-modal>
           <div
-            class="
-              h-100
-              d-flex
-              flex-column
-              justify-content-center
-              align-items-center
-            "
+            class="h-100 d-flex flex-column justify-content-center align-items-center"
           >
             <img
               src="@/assets/images/missions/plus_icon.png"
@@ -230,13 +219,13 @@ export default {
       imageNameKey: 0,
     };
   },
-  created(){
+  created() {
     console.log(this.subjectId);
     axios
-      .post("admin/v1/movies/topics",{level_id : this.levelId})
+      .post("admin/v1/movies/topics", { level_id: this.levelId })
       .then(({ data }) => {
         this.topics = data.topics;
-       })
+      })
       .catch((error) => {
         console.log(error);
       });
@@ -251,7 +240,7 @@ export default {
         reader.onload = function (f) {
           document.getElementById("previewImg").src = reader.result;
           document.getElementById("previewImg").style.display = "block";
-          self.topicForm.topicImg.img = reader.result;
+          self.topicForm.topicImg.img = e.target.files[0] ;
         };
         reader.readAsDataURL(e.target.files[0]);
         // self.topicForm.topicImg.img = e.target.files[0];
@@ -271,11 +260,33 @@ export default {
         topicDescription: this.topicForm.topicDescription,
         topicImg: this.topicForm.topicImg.img,
       });
-      this.$bvModal.hide("add-topic-modal");
+      // var topicData = {
+      //   level_id:this.levelId,
+      //   title : this.topicForm.name,
+      //   description : this.topicForm.topicDescription,
+      // }
 
-      this.topicForm.topicName = "";
-      this.topicForm.topicDescription = "";
-      this.topicForm.topicImg = "";
+      var topicData = new FormData();
+      topicData.append("level_id", this.levelId);
+      topicData.append("title", this.topicForm.topicName);
+      topicData.append("description", this.topicForm.topicDescription);
+      topicData.append("flag",0);
+      topicData.append("image", this.topicForm.topicImg.img);
+
+     
+      axios
+        .post("admin/v1/movies/create-topic", topicData)
+        .then(({ data }) => {
+          console.log(data);
+          this.$bvModal.hide("add-topic-modal");
+
+          this.topicForm.topicName = "";
+          this.topicForm.topicDescription = "";
+          this.topicForm.topicImg = "";
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
   },
 };

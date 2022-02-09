@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-breadcrumb class="breadcrumb-slash" :items="breadcrumbs" />
-    <b-card class="subNameContainer">
+    <b-card class="subNameContainer" >
       <h1 class="subName">
         {{ subjectName }}
       </h1>
@@ -11,7 +11,7 @@
         class="level_icon"
       />
     </b-card>
-    <div class="row mx-0 mt-5">
+    <div class="row mx-0 mt-5" :key="componentKey">
       <div
         class="col-12 col-md-6 col-xl-4 mb-3"
         v-for="(level, levelIndex) in levels"
@@ -181,6 +181,7 @@ export default {
       totalTopic: "",
       levels: [],
       subjectName:"",
+      componentKey: 0,
     };
   },
   created() {
@@ -227,6 +228,7 @@ export default {
           this.levelDescription = "";
           this.totalRewards = "";
           this.totalTopic = "";
+           this.componentKey += 1;  
         })
         .catch(({ error }) => {
           console.log(error);
