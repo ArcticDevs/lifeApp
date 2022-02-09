@@ -9,4 +9,9 @@ export default [
     name: 'add-mission',
     component: () => import('@/views/missions/AddMission.vue'),
   },
+  {
+    path: '/mission/:missionId',
+    name: 'mission-details',
+    component: () => import('@/views/missions/MissionDetails.vue'),
+  },
 ]

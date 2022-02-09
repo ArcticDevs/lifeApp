@@ -38,6 +38,7 @@
         v-for="(topic, topicIndex) in topics"
         :key="topicIndex"
       >
+      <router-link :to="$route.path +'/details'">
         <b-card class="level_card">
           <div class="level_card_content pr-0">
             <h2>{{ topic.title }}</h2>
@@ -54,6 +55,7 @@
             class="level_card_icon"
           />
         </b-card>
+      </router-link>
       </div>
       <div class="col-12 col-md-4 col-xl-3 mb-3">
         <b-card class="new_level_card" v-b-modal.add-topic-modal>

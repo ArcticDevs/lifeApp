@@ -94,8 +94,8 @@
                   <b-tab
                     v-for="(lang, langIndex) in langs"
                     :key="langIndex"
-                    :title="lang"
-                    @click="locale = lang"
+                    :title="lang.name"
+                    @click="locale = lang.code"
                   >
                     <b-card-text>
                       <!-- images -->
@@ -107,10 +107,15 @@
                           align-items-center
                         "
                       >
-                        <b-col cols="12" md="8" class="mb-2 mr-md-3">
+                        <b-col
+                          cols="12"
+                          md="8"
+                          class="mb-2 mr-md-3"
+                          v-if="locale === 'En'"
+                        >
                           <label>Images</label>
                           <b-form-group
-                            v-for="(image, index) in missionForm.images"
+                            v-for="(image, index) in missionForm.En_images"
                             :key="index"
                           >
                             <div class="d-flex align-items-center">
@@ -125,7 +130,9 @@
                                 </div>
                                 <b-form-file
                                   accept="image/*"
-                                  @change="onImageSelected($event, index)"
+                                  @change="
+                                    onImageSelected($event, index, locale)
+                                  "
                                   :id="'prodImg' + index"
                                 ></b-form-file>
                                 <!-- <img src="" alt="" :id="'previewImg'+index" class="previewImg" /> -->
@@ -138,8 +145,8 @@
                                 </p>
                                 <!--          Remove Svg Icon-->
                                 <svg
-                                  v-show="missionForm.images.length > 1"
-                                  @click="removeImage(index)"
+                                  v-show="missionForm.En_images.length > 1"
+                                  @click="removeImage(index, locale)"
                                   xmlns="http://www.w3.org/2000/svg"
                                   viewBox="0 0 24 24"
                                   width="24"
@@ -157,8 +164,144 @@
                               <!-- Add button -->
                               <b-button
                                 variant="primary"
-                                v-show="index === missionForm.images.length - 1"
-                                @click="addImage()"
+                                v-show="
+                                  index === missionForm.En_images.length - 1
+                                "
+                                @click="addImage(locale)"
+                              >
+                                Add
+                              </b-button>
+                            </div>
+                          </b-form-group>
+                        </b-col>
+                        <b-col
+                          cols="12"
+                          md="8"
+                          class="mb-2 mr-md-3"
+                          v-else-if="locale === 'Hn'"
+                        >
+                          <label>Images</label>
+                          <b-form-group
+                            v-for="(image, index) in missionForm.Hn_images"
+                            :key="index"
+                          >
+                            <div class="d-flex align-items-center">
+                              <!-- image upload container -->
+                              <div class="fileUploadContainer mb-1 mr-2">
+                                <div class="text-center">
+                                  <img
+                                    src="@/assets/images/svg/file-upload.svg"
+                                    alt="file upload"
+                                  />
+                                  <span class="d-block">Click to upload </span>
+                                </div>
+                                <b-form-file
+                                  accept="image/*"
+                                  @change="
+                                    onImageSelected($event, index, locale)
+                                  "
+                                  :id="'prodImg' + index"
+                                ></b-form-file>
+                                <!-- <img src="" alt="" :id="'previewImg'+index" class="previewImg" /> -->
+                                <p
+                                  :id="'previewImgName' + index"
+                                  class="m-0 previewImgName"
+                                  :key="imageNameKey"
+                                >
+                                  {{ image.name }}
+                                </p>
+                                <!--          Remove Svg Icon-->
+                                <svg
+                                  v-show="missionForm.Hn_images.length > 1"
+                                  @click="removeImage(index, locale)"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  width="24"
+                                  height="24"
+                                  class="ml-2 cursor-pointer removeImg"
+                                >
+                                  <path fill="none" d="M0 0h24v24H0z" />
+                                  <path
+                                    fill="#EC4899"
+                                    d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
+                                  />
+                                </svg>
+                              </div>
+
+                              <!-- Add button -->
+                              <b-button
+                                variant="primary"
+                                v-show="
+                                  index === missionForm.Hn_images.length - 1
+                                "
+                                @click="addImage(locale)"
+                              >
+                                Add
+                              </b-button>
+                            </div>
+                          </b-form-group>
+                        </b-col>
+                        <b-col
+                          cols="12"
+                          md="8"
+                          class="mb-2 mr-md-3"
+                          v-else-if="locale === 'Ma'"
+                        >
+                          <label>Images</label>
+                          <b-form-group
+                            v-for="(image, index) in missionForm.Ma_images"
+                            :key="index"
+                          >
+                            <div class="d-flex align-items-center">
+                              <!-- image upload container -->
+                              <div class="fileUploadContainer mb-1 mr-2">
+                                <div class="text-center">
+                                  <img
+                                    src="@/assets/images/svg/file-upload.svg"
+                                    alt="file upload"
+                                  />
+                                  <span class="d-block">Click to upload </span>
+                                </div>
+                                <b-form-file
+                                  accept="image/*"
+                                  @change="
+                                    onImageSelected($event, index, locale)
+                                  "
+                                  :id="'prodImg' + index"
+                                ></b-form-file>
+                                <!-- <img src="" alt="" :id="'previewImg'+index" class="previewImg" /> -->
+                                <p
+                                  :id="'previewImgName' + index"
+                                  class="m-0 previewImgName"
+                                  :key="imageNameKey"
+                                >
+                                  {{ image.name }}
+                                </p>
+                                <!--          Remove Svg Icon-->
+                                <svg
+                                  v-show="missionForm.Ma_images.length > 1"
+                                  @click="removeImage(index, locale)"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  width="24"
+                                  height="24"
+                                  class="ml-2 cursor-pointer removeImg"
+                                >
+                                  <path fill="none" d="M0 0h24v24H0z" />
+                                  <path
+                                    fill="#EC4899"
+                                    d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
+                                  />
+                                </svg>
+                              </div>
+
+                              <!-- Add button -->
+                              <b-button
+                                variant="primary"
+                                v-show="
+                                  index === missionForm.Ma_images.length - 1
+                                "
+                                @click="addImage(locale)"
                               >
                                 Add
                               </b-button>
@@ -322,10 +465,12 @@ export default {
         brainCoins: "",
         heartCoins: "",
         question: "",
-        images: [{}],
+        En_images: [{}],
+        Hn_images: [{}],
+        Ma_images: [{}],
         document: { file: null, name: "" },
       },
-      locale: "Hindi",
+      locale: "Hn",
       required,
       email,
       integer,
@@ -345,7 +490,11 @@ export default {
           active: true,
         },
       ],
-      langs: ["Hindi", "English", "Marathi"],
+      langs: [
+        { name: "Hindi", code: "Hn" },
+        { name: "English", code: "En" },
+        { name: "Marathi", code: "Ma" },
+      ],
       missionId: "",
     };
   },
@@ -370,16 +519,9 @@ export default {
           var imageFormData = new FormData();
           var questionFromData = new FormData();
 
-          if (this.locale === "Hindi") {
-            imageFormData.append("locale", "Hn");
-            questionFromData.append("locale", "Hn");
-          } else if (this.locale === "English") {
-            imageFormData.append("locale", "En");
-            questionFromData.append("locale", "En");
-          } else if (this.locale === "Marathi") {
-            imageFormData.append("locale", "Ma");
-            questionFromData.append("locale", "Ma");
-          }
+          imageFormData.append("locale", this.locale);
+          questionFromData.append("locale", this.locale);
+
           imageFormData.append("mission_id", self.missionId);
           questionFromData.append("mission_id", self.missionId);
           questionFromData.append("question_title", self.missionForm.question);
@@ -388,7 +530,7 @@ export default {
             self.missionForm.document.file
           );
 
-          self.missionForm.images.forEach((element, i) => {
+          self.missionForm.En_images.forEach((element, i) => {
             console.log(element);
             imageFormData.append("image", element.img);
           });
@@ -427,25 +569,56 @@ export default {
           console.log(err);
         });
     },
-    onImageSelected(e, index) {
+    onImageSelected(e, index, locale) {
       let self = this;
       if (e.target.files && e.target.files[0]) {
         let name = e.target.files[0].name;
         var reader = new FileReader();
         reader.readAsDataURL(e.target.files[0]);
-        self.missionForm.images[index].img = e.target.files[0];
-        self.missionForm.images[index].name = name;
+        if (locale === "En") {
+          self.missionForm.En_images[index].img = e.target.files[0];
+          self.missionForm.En_images[index].name = name;
+          self.missionForm.En_images[index].locale = locale;
+        } else if (locale === "Hn") {
+          self.missionForm.Hn_images[index].img = e.target.files[0];
+          self.missionForm.Hn_images[index].name = name;
+          self.missionForm.Hn_images[index].locale = locale;
+        } else if (locale === "Ma") {
+          self.missionForm.Ma_images[index].img = e.target.files[0];
+          self.missionForm.Ma_images[index].name = name;
+          self.missionForm.Ma_images[index].locale = locale;
+        }
         self.imageNameKey++;
       }
     },
-    addImage() {
-      this.missionForm.images.push({});
+    addImage(locale) {
+      if (locale === "En") {
+        this.missionForm.En_images.push({});
+      } else if (locale === "Hn") {
+        this.missionForm.Hn_images.push({});
+      } else if (locale === "Ma") {
+        this.missionForm.Ma_images.push({});
+      }
     },
-    removeImage(index) {
-      if (this.missionForm.images.length === 1) {
-        this.missionForm.images = [{}];
-      } else {
-        this.missionForm.images.splice(index, 1);
+    removeImage(index, locale) {
+      if (locale === "En") {
+        if (this.missionForm.En_images.length === 1) {
+          this.missionForm.En_images = [{}];
+        } else {
+          this.missionForm.En_images.splice(index, 1);
+        }
+      } else if (locale === "Hn") {
+        if (this.missionForm.Hn_images.length === 1) {
+          this.missionForm.Hn_images = [{}];
+        } else {
+          this.missionForm.Hn_images.splice(index, 1);
+        }
+      } else if (locale === "Ma") {
+        if (this.missionForm.Ma_images.length === 1) {
+          this.missionForm.Ma_images = [{}];
+        } else {
+          this.missionForm.Ma_images.splice(index, 1);
+        }
       }
       self.imageNameKey++;
     },

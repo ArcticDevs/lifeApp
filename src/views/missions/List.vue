@@ -6,9 +6,10 @@
       <div class="row">
         <div
           class="col-12 col-sm-6 col-md-4 col-lg-3 h-100"
-          v-for="(mission,i) in missions"
+          v-for="(mission, i) in missions"
           :key="i"
         >
+          <router-link :to="'/mission/' + mission.id">
           <b-card class="mission_card text-center">
             <img
               src="@/assets/images/missions/mission_icon.png"
@@ -17,6 +18,7 @@
             />
             <h3 class="mt-2">{{ mission.name }}</h3>
           </b-card>
+          </router-link>
         </div>
         <div class="col-12 col-sm-6 col-md-4 col-lg-3 h-100">
           <router-link to="/mission/add">
@@ -62,17 +64,15 @@ export default {
           active: true,
         },
       ],
-      missions:[]
+      missions: [],
     };
   },
   created() {
     axios
-      .get(
-        "/admin/v1/missions/list"
-      )
+      .get("/admin/v1/missions/list")
       .then((response) => {
         console.log(response);
-        this.missions = response.data.missions
+        this.missions = response.data.missions;
       })
       .catch((error) => {
         console.log(error);
