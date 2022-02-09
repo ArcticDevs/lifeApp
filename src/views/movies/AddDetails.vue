@@ -5,22 +5,14 @@
       <div class="row m-0">
         <div class="col-12 col-sm-8 col-md-9">
           <h2 class="subName">
-            {{ levelId[0].toUpperCase() + levelId.slice(1) }}
+            {{ title }}
           </h2>
           <p>
             {{ topicDescription }}
           </p>
         </div>
         <div
-          class="
-            col-12 col-sm-4 col-md-3
-            mt-2 mt-lg-0
-            pr-xl-4
-            d-flex
-            flex-wrap flex-lg-nowrap
-            align-items-end
-            justify-content-end
-          "
+          class="col-12 col-sm-4 col-md-3 mt-2 mt-lg-0 pr-xl-4 d-flex flex-wrap flex-lg-nowrap align-items-end justify-content-end"
         >
           <img
             src="@/assets/images/movies/density.png"
@@ -32,7 +24,7 @@
     </b-card>
 
     <div class="w-100 mt-3">
-      <validation-observer ref="simpleRules">
+      <validation-observer ref="simpleRules1">
         <b-form
           novalidate
           class="needs-validation mb-3"
@@ -104,21 +96,11 @@
                 <b-card-text>
                   <!-- Upload document -->
                   <b-form-row
-                    class="
-                      w-100
-                      d-flex
-                      justify-content-center
-                      align-items-center
-                    "
+                    class="w-100 d-flex justify-content-center align-items-center"
                   >
                     <b-col cols="12" md="8" class="mb-2 mr-md-3">
                       <div
-                        class="
-                          d-flex
-                          flex-column
-                          justify-content-center
-                          align-items-center
-                        "
+                        class="d-flex flex-column justify-content-center align-items-center"
                       >
                         <div class="fileUploadContainer mb-1 mt-1">
                           <div class="text-center">
@@ -128,7 +110,8 @@
                             />
                             <span class="d-block">Click to upload video</span>
                           </div>
-                          <b-form-file accept="video/*"
+                          <b-form-file
+                            accept="video/*"
                             @change="onDocumentSelected($event, langIndex)"
                           ></b-form-file>
                           <p :key="documentNameKey" class="m-0 previewImgName">
@@ -181,7 +164,7 @@
                       <b-form
                         novalidate
                         class="needs-validation"
-                        :id="'quizForm_'+formIndex"
+                        :id="'quizForm_' + formIndex"
                         enctype="multipart/form-data"
                       >
                         <b-form-row>
@@ -252,14 +235,28 @@
                               <b-form-row>
                                 <b-col cols="6">
                                   <b-form-input
-                                    :id="'audio_english_'+formIndex"
+                                    :id="'audio_english_' + formIndex"
                                     placeholder="English Audio"
+                                    v-model="form.englishAudio.name"
                                     disabled
                                 /></b-col>
                                 <b-col cols="6" class="text-center">
+                                  <input
+                                    :id="'englishAudioUpload_' + formIndex"
+                                    @change="
+                                      addAudio($event, 'English', formIndex)
+                                    "
+                                    type="file"
+                                    hidden
+                                  />
                                   <b-button
                                     variant="primary"
                                     class="addQuestionBtn"
+                                    @click="
+                                      openAudioInput(
+                                        `englishAudioUpload_${formIndex}`
+                                      )
+                                    "
                                   >
                                     Add audio
                                   </b-button>
@@ -270,17 +267,28 @@
                               <b-form-row>
                                 <b-col cols="6">
                                   <b-form-input
-                                    :id="'audio_hindi_'+formIndex"
+                                    :id="'audio_hindi_' + formIndex"
                                     placeholder="Hindi Audio"
+                                    v-model="form.hindiAudio.name"
                                     disabled
-
                                 /></b-col>
                                 <b-col cols="6" class="text-center">
-                                  <input :id="'hindiAudioUpload_'+formIndex" @onChange="addAudio($event,'audio_hindi_'+formIndex,formIndex)" type="file" hidden>
+                                  <input
+                                    :id="'hindiAudioUpload_' + formIndex"
+                                    @change="
+                                      addAudio($event, 'Hindi', formIndex)
+                                    "
+                                    type="file"
+                                    hidden
+                                  />
                                   <b-button
                                     variant="primary"
                                     class="addQuestionBtn"
-                                    @click="openAudioInput(`hindiAudioUpload_${formIndex}`)"
+                                    @click="
+                                      openAudioInput(
+                                        `hindiAudioUpload_${formIndex}`
+                                      )
+                                    "
                                   >
                                     Add audio
                                   </b-button>
@@ -293,12 +301,26 @@
                                   <b-form-input
                                     id="audio_marathi"
                                     placeholder="Marathi Audio"
+                                    v-model="form.marathiAudio.name"
                                     disabled
                                 /></b-col>
                                 <b-col cols="6" class="text-center">
+                                  <input
+                                    :id="'marathiAudioUpload_' + formIndex"
+                                    @change="
+                                      addAudio($event, 'Marathi', formIndex)
+                                    "
+                                    type="file"
+                                    hidden
+                                  />
                                   <b-button
                                     variant="primary"
                                     class="addQuestionBtn"
+                                    @click="
+                                      openAudioInput(
+                                        `marathiAudioUpload_${formIndex}`
+                                      )
+                                    "
                                   >
                                     Add audio
                                   </b-button>
@@ -327,7 +349,7 @@
                               <span class="d-block">Click to upload image</span>
                             </div>
                             <b-form-file
-                            accept="image/*"
+                              accept="image/*"
                               @change="
                                 onDocumentSelected(
                                   $event,
@@ -341,7 +363,7 @@
                             </p>
                             <!--          Remove Svg Icon-->
                             <svg
-                              v-if="form.options.length >0"
+                              v-if="form.options.length > 0"
                               @click="removeOption(formIndex, optionIndex)"
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 24 24"
@@ -378,9 +400,9 @@
                     </div>
                   </b-tab>
                 </b-tabs>
-                <hr>
+                <hr />
               </b-card>
-               <b-button
+              <b-button
                 variant="primary"
                 class="addQuestionBtn mb-2 mr-4"
                 @click="addQuestion(formIndex)"
@@ -388,17 +410,17 @@
                 Add a question
               </b-button>
 
-              <hr>
+              <hr />
             </div>
-               <div class="w-100 text-center">
-                  <b-button
+            <div class="w-100 text-center">
+              <b-button
                 variant="primary"
                 class="addQuestionBtn mt-2"
                 @click="submitQuestion(formIndex)"
               >
                 Submit
               </b-button>
-                </div>
+            </div>
           </div>
         </b-tab>
       </b-tabs>
@@ -408,6 +430,7 @@
 
 <script>
 import BCardCode from "@core/components/b-card-code";
+import axios from "axios";
 import {
   BBreadcrumb,
   BCard,
@@ -456,9 +479,10 @@ export default {
   data() {
     return {
       levelId: this.$route.params.level,
-      topicDescription:
-        "Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print, graphic or web designs. The passage is attributed to an unknown typesetter in the .",
+      topicId: this.$route.params.topic,
 
+      topicDescription: "",
+      title: "",
       breadcrumbs: [
         {
           text: "Movies",
@@ -494,28 +518,62 @@ export default {
           hindiQuestion: "",
           englishQuestion: "",
           marathiQuestion: "",
-          hindiAudio: null,
-          englishAudio: null,
-          marathiAudio: null,
+          hindiAudio: { file: null, name: "" },
+          englishAudio: { file: null, name: "" },
+          marathiAudio: { file: null, name: "" },
           questionImages: [{ img: null, name: "" }],
           options: [],
         },
       ],
     };
   },
+  created() {
+    var postData = {
+      level_id: this.levelId,
+    };
+    console.log(postData);
+    axios
+      .post("admin/v1/movies/topics", postData)
+      .then(({ data }) => {
+        console.log(data);
+        data.topics.forEach((element) => {
+          if (element.id == this.topicId) {
+            console.log(element.id == this.topicId);
+            this.topicDescription = element.description;
+            this.title = element.title;
+          }
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  },
   methods: {
     submitPoints() {
-      this.$refs.simpleRules.validate().then((success) => {
+      this.$refs.simpleRules1.validate().then((success) => {
         if (success) {
-          this.$swal({
-            title: "Points Allotted!",
-            text: `Brain Points: ${this.pointsForm.brainPoints} | Heart Points: ${this.pointsForm.heartPoints}`,
-            icon: "success",
-            customClass: {
-              confirmButton: "btn btn-primary",
-            },
-            buttonsStyling: false,
-          });
+          var postQuizData = {
+            movie_id: this.topicId,
+            brain_points: this.pointsForm.brainPoints,
+            heart_points: this.pointsForm.heartPoints,
+          };
+          axios
+            .post("/admin/v1/movies/create-quiz", postQuizData)
+            .then(({ data }) => {
+              console.log(data);
+              this.$swal({
+                title: "Points Allotted!",
+                text: `Brain Points: ${this.pointsForm.brainPoints} | Heart Points: ${this.pointsForm.heartPoints}`,
+                icon: "success",
+                customClass: {
+                  confirmButton: "btn btn-primary",
+                },
+                buttonsStyling: false,
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
         }
       });
     },
@@ -558,40 +616,50 @@ export default {
       }
     },
     addQuestion(formIndex) {
-      const form={
-          pointsType: "brain",
-          hindiQuestion: "",
-          englishQuestion: "",
-          marathiQuestion: "",
-          hindiAudio: null,
-          englishAudio: null,
-          marathiAudio: null,
-          questionImages: [{ img: null, name: "" }],
-          options: [{ img: null, imgName: "", optionName: "" }],
-        };
+      const form = {
+        pointsType: "brain",
+        hindiQuestion: "",
+        englishQuestion: "",
+        marathiQuestion: "",
+        hindiAudio: {file:null , name:""},
+        englishAudio: {file:null , name:""},
+        marathiAudio: {file:null , name:""},
+        questionImages: [{ img: null, name: "" }],
+        options: [{ img: null, imgName: "", optionName: "" }],
+      };
       // this.quizForm.splice(formIndex+1,0,form)
       const insert = (arr, index, newItem) => [
-  // part of the array before the specified index
-  ...arr.slice(0, index),
-  // inserted item
-  newItem,
-  // part of the array after the specified index
-  ...arr.slice(index)
-]
+        // part of the array before the specified index
+        ...arr.slice(0, index),
+        // inserted item
+        newItem,
+        // part of the array after the specified index
+        ...arr.slice(index),
+      ];
 
-  this.quizForm = insert(this.quizForm, formIndex+1, form)
+      this.quizForm = insert(this.quizForm, formIndex + 1, form);
     },
-    openAudioInput(inputId){
-      document.getElementById(inputId).click()
+    openAudioInput(inputId) {
+      document.getElementById(inputId).click();
     },
-    addAudio(e,lang,index){
+    addAudio(e, lang, index) {
+      console.log("guiojhg");
       let self = this;
       if (e.target.files && e.target.files[0]) {
         let name = e.target.files[0].name;
         var reader = new FileReader();
         reader.readAsDataURL(e.target.files[0]);
-        self.movieForm[index].file = e.target.files[0];
-        self.movieForm[index].name = name;
+        if (lang === "Hindi") {
+          self.quizForm[index].hindiAudio.file = e.target.files[0];
+          self.quizForm[index].hindiAudio.name = name;
+        } else if (lang === "English") {
+          self.quizForm[index].englishAudio.file = e.target.files[0];
+          self.quizForm[index].englishAudio.name = name;
+        } else if (lang === "Marathi") {
+          self.quizForm[index].marathiAudio.file = e.target.files[0];
+          self.quizForm[index].marathiAudio.name = name;
+        }
+        console.log(self.quizForm[index]);
         self.documentNameKey++;
       }
     },
@@ -602,9 +670,9 @@ export default {
         optionName: "",
       });
     },
-    removeOption(formIndex,optionIndex){
-      this.quizForm[formIndex].options.splice(optionIndex,1)
-    }
+    removeOption(formIndex, optionIndex) {
+      this.quizForm[formIndex].options.splice(optionIndex, 1);
+    },
   },
 };
 </script>

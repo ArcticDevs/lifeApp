@@ -5,22 +5,14 @@
       <div class="row m-0">
         <div class="col-12 col-sm-8 col-md-9">
           <h2 class="subName">
-            {{ levelId[0].toUpperCase() + levelId.slice(1) }}
+            {{ title }}
           </h2>
           <p>
-            {{ topicDescription }}
+            {{ description }}
           </p>
         </div>
         <div
-          class="
-            col-12 col-sm-4 col-md-3
-            mt-2 mt-lg-0
-            pr-xl-4
-            d-flex
-            flex-wrap flex-lg-nowrap
-            align-items-end
-            justify-content-end
-          "
+          class="col-12 col-sm-4 col-md-3 mt-2 mt-lg-0 pr-xl-4 d-flex flex-wrap flex-lg-nowrap align-items-end justify-content-end"
         >
           <img
             src="@/assets/images/movies/density.png"
@@ -31,7 +23,7 @@
       </div>
     </b-card>
     <div class="w-100 text-center mt-5">
-      <router-link :to="$route.path +'/add'">
+      <router-link :to="$route.path + '/add'">
         <b-button variant="primary" class="addDetailsBtn">Add Details</b-button>
       </router-link>
     </div>
@@ -54,7 +46,8 @@ import {
   BButton,
   BTable,
 } from "bootstrap-vue";
-
+import { mounted } from "vue-echarts";
+import axios from "axios";
 export default {
   components: {
     BBreadcrumb,
@@ -73,10 +66,10 @@ export default {
   },
   data() {
     return {
+      description: "",
+      title: "",
       levelId: this.$route.params.level,
-      topicDescription:
-        "Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print, graphic or web designs. The passage is attributed to an unknown typesetter in the .",
-
+      topicId: this.$route.params.topic,
       breadcrumbs: [
         {
           text: "Movies",
@@ -93,6 +86,26 @@ export default {
         },
       ],
     };
+  },
+  created() {
+    var postData = {
+      level_id: this.levelId,
+    };
+    axios
+      .post("admin/v1/movies/topics", postData)
+      .then(({ data }) => {
+        console.log(data);
+        data.topics.forEach((element) => {
+          if (element.id == this.topicId) {
+            console.log(element.id == this.topicId);
+            this.description = element.description;
+            this.title = element.title;
+          }
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   },
 };
 </script>

@@ -38,7 +38,7 @@
         v-for="(topic, topicIndex) in topics"
         :key="topicIndex"
       >
-      <router-link :to="$route.path +'/details'">
+      <router-link :to="$route.path +'/details/'+ topic.id">
         <b-card class="level_card">
           <div class="level_card_content pr-0">
             <h2>{{ topic.title }}</h2>
@@ -227,6 +227,7 @@ export default {
       .post("admin/v1/movies/topics", { level_id: this.levelId })
       .then(({ data }) => {
         this.topics = data.topics;
+        console.log(this.topics)
       })
       .catch((error) => {
         console.log(error);
