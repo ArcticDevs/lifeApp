@@ -15,12 +15,12 @@ export default [
       component: () => import('@/views/movies/Level.vue'),
     },
     {
-      path: '/movies/:subject/:level/details',
+      path: '/movies/:subject/:level/details/:topic',
       name: 'movies-level-details',
       component: () => import('@/views/movies/Details.vue'),
     },
     {
-      path: '/movies/:subject/:level/details/add',
+      path: '/movies/:subject/:level/details/:topic/add',
       name: 'movies-level-details-add',
       component: () => import('@/views/movies/AddDetails.vue'),
     },
