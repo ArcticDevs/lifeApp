@@ -29,7 +29,8 @@ import store from './store'
 
 
 
-axios.defaults.baseURL = "https://dev.gappubobo.com"
+// axios.defaults.baseURL = "https://dev.gappubobo.com"
+axios.defaults.baseURL = "http://localhost/lifeapp-api"
 
 // axios.defaults.timeout = 3000;
 // Add a request interceptor
