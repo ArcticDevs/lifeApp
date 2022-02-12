@@ -24,223 +24,331 @@
     </b-card>
 
     <div class="w-100 mt-3">
-      <validation-observer ref="simpleRules1">
-        <b-form
-          novalidate
-          class="needs-validation mb-3"
-          id="pointsForm"
-          enctype="multipart/form-data"
-        >
-          <b-form-row>
-            <b-col cols="12" class="mb-1">
-              <label>Coins Allotment</label>
-            </b-col>
-
-            <b-col cols="6" md="4" lg="3" class="mb-2 mb-md-0">
-              <validation-provider
-                #default="{ errors }"
-                name="Brain Points"
-                rules="required|integer"
-              >
-                <b-form-input
-                  id="brainPoints"
-                  v-model="pointsForm.brainPoints"
-                  :state="errors.length > 0 ? false : null"
-                  placeholder="Brain Points"
-                />
-                <small class="text-danger">{{ errors[0] }}</small>
-              </validation-provider>
-            </b-col>
-            <b-col cols="6" md="4" lg="3" class="mb-2 mb-md-0">
-              <validation-provider
-                #default="{ errors }"
-                name="Heart Points"
-                rules="required|integer"
-              >
-                <b-form-input
-                  id="heartPoints"
-                  v-model="pointsForm.heartPoints"
-                  :state="errors.length > 0 ? false : null"
-                  placeholder="Heart Points"
-                />
-                <small class="text-danger">{{ errors[0] }}</small>
-              </validation-provider>
-            </b-col>
-            <b-col
-              cols="12"
-              md="3"
-              lg="3"
-              class="mb-2 mb-md-0 ml-md-3 text-center text-md-left"
-            >
-              <b-button
-                variant="primary"
-                type="submit"
-                class="addPointsBtn"
-                @click.prevent="submitPoints"
-                >Submit</b-button
-              >
-            </b-col>
-          </b-form-row>
-        </b-form>
-      </validation-observer>
-
       <b-tabs>
-        <b-tab title="Movie">
-          <b-card>
-            <b-tabs>
-              <b-tab
-                v-for="(lang, langIndex) in movieForm"
-                :key="langIndex"
-                :title="lang.lang"
-              >
-                <b-card-text>
-                  <!-- Upload document -->
-                  <b-form-row
-                    class="w-100 d-flex justify-content-center align-items-center"
-                  >
-                    <b-col cols="12" md="8" class="mb-2 mr-md-3">
-                      <div
-                        class="d-flex flex-column justify-content-center align-items-center"
+        <b-tab
+          v-for="(lang, langIndex) in movieForm"
+          :key="langIndex"
+          :title="lang.lang"
+        >
+          <b-tabs>
+            <b-tab title="Movie">
+              <validation-observer ref="simpleRules1">
+                <b-form
+                  novalidate
+                  class="needs-validation mb-3"
+                  id="pointsForm"
+                  enctype="multipart/form-data"
+                >
+                  <b-form-row>
+                    <b-col cols="12" class="mb-1">
+                      <label>Coins Allotment</label>
+                    </b-col>
+
+                    <b-col cols="6" md="4" lg="3" class="mb-2 mb-md-0">
+                      <validation-provider
+                        #default="{ errors }"
+                        name="Brain Points"
+                        rules="required|integer"
                       >
-                        <div class="fileUploadContainer mb-1 mt-1">
-                          <div class="text-center">
-                            <img
-                              src="@/assets/images/svg/file-upload.svg"
-                              alt="file upload"
-                            />
-                            <span class="d-block">Click to upload video</span>
-                          </div>
-                          <b-form-file
-                            accept="video/*"
-                            @change="onDocumentSelected($event, langIndex)"
-                          ></b-form-file>
-                          <p :key="documentNameKey" class="m-0 previewImgName">
-                            {{ lang.name }}
-                          </p>
-                          <!--          Remove Svg Icon-->
-                          <svg
-                            v-if="lang.file != null"
-                            @click="removeDocument(langIndex)"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            height="24"
-                            class="ml-2 cursor-pointer removeImg"
-                          >
-                            <path fill="none" d="M0 0h24v24H0z" />
-                            <path
-                              fill="#EC4899"
-                              d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
-                            />
-                          </svg>
-                        </div>
-                        <div class="w-100 text-center">
-                          <b-button
-                            variant="primary"
-                            class="addVideoBtn"
-                            @click="addVideo(langIndex)"
-                            >Add</b-button
-                          >
-                        </div>
-                      </div>
+                        <b-form-input
+                          id="brainPoints"
+                          v-model="pointsForm.brainPoints"
+                          :state="errors.length > 0 ? false : null"
+                          placeholder="Brain Points"
+                        />
+                        <small class="text-danger">{{ errors[0] }}</small>
+                      </validation-provider>
+                    </b-col>
+                    <b-col cols="6" md="4" lg="3" class="mb-2 mb-md-0">
+                      <validation-provider
+                        #default="{ errors }"
+                        name="Heart Points"
+                        rules="required|integer"
+                      >
+                        <b-form-input
+                          id="heartPoints"
+                          v-model="pointsForm.heartPoints"
+                          :state="errors.length > 0 ? false : null"
+                          placeholder="Heart Points"
+                        />
+                        <small class="text-danger">{{ errors[0] }}</small>
+                      </validation-provider>
+                    </b-col>
+                    <b-col
+                      cols="12"
+                      md="3"
+                      lg="3"
+                      class="mb-2 mb-md-0 ml-md-3 text-center text-md-left"
+                    >
+                      <b-button
+                        variant="primary"
+                        type="submit"
+                        class="addPointsBtn"
+                        @click.prevent="submitPoints"
+                        >Submit</b-button
+                      >
                     </b-col>
                   </b-form-row>
-                </b-card-text>
-              </b-tab></b-tabs
-            >
-          </b-card>
-        </b-tab>
-        <b-tab title="Quiz">
-          <div class="row mx-0">
-            <div
-              v-for="(form, formIndex) in quizForm"
-              :key="formIndex"
-              class="w-100 text-right"
-            >
+                </b-form>
+              </validation-observer>
               <b-card>
                 <b-tabs>
-                  <b-tab title="Question">
-                    <validation-observer ref="simpleRules">
-                      <b-form
-                        novalidate
-                        class="needs-validation"
-                        :id="'quizForm_' + formIndex"
-                        enctype="multipart/form-data"
-                      >
-                        <b-form-row>
-                          <!-- question type radio btns -->
-                          <div class="demo-inline-spacing mb-2">
-                            <b-form-radio
-                              v-model="form.pointsType"
-                              name="brain"
-                              value="brain"
-                              class="custom-control-primary"
-                            >
-                              Brain Question
-                            </b-form-radio>
-                            <b-form-radio
-                              v-model="form.pointsType"
-                              name="heart"
-                              value="heart"
-                              class="custom-control-primary"
-                            >
-                              Heart Question
-                            </b-form-radio>
-                          </div>
-                        </b-form-row>
+                  <b-card-text>
+                    <!-- Upload document -->
+                    <b-form-row class="w-100 d-flex justify-content-center">
+                      <b-col cols="12" md="8" class="mb-2 mr-md-3">
+                        <div class="d-flex flex-column justify-content-center">
+                          <b-form
+                            class="needs-validation mb-3"
+                            enctype="multipart/form-data"
+                          >
+                            <b-form-row>
+                              <b-col
+                                cols="6"
+                                md="6"
+                                lg="6"
+                                class="mb-2 mb-md-0"
+                              >
+                                <b-form-file
+                                  id="movieUpload"
+                                  v-model="movieForm[langIndex].name"
+                                  placeholder="Video"
+                                />
+                              </b-col>
 
-                        <b-form-row>
-                          <!-- Question titles -->
-                          <b-col cols="12" md="7">
-                            <b-form-group
-                              class="text-left"
-                              label-cols="12"
-                              label-cols-md="2"
-                              label="English"
-                              label-for="question_english"
-                            >
-                              <b-form-input
-                                id="question_english"
-                                placeholder="Question"
+                              <b-col
+                                cols="3"
+                                md="3"
+                                lg="3"
+                                class="mb-2 mb-md-0 ml-md-3 text-center text-md-left"
+                              >
+                                <b-button
+                                  variant="primary"
+                                  type="submit"
+                                  class="addVideoBtn"
+                                  @click.prevent="addVideo(langIndex)"
+                                  >Add Video</b-button
+                                >
+                              </b-col>
+                            </b-form-row>
+                          </b-form>
+                        </div>
+                      </b-col>
+                    </b-form-row>
+                  </b-card-text>
+                </b-tabs>
+              </b-card>
+            </b-tab>
+            <b-tab title="Quiz">
+              <validation-observer ref="simpleRules1">
+                <b-form
+                  novalidate
+                  class="needs-validation mb-3"
+                  id="pointsForm"
+                  enctype="multipart/form-data"
+                >
+                  <b-form-row>
+                    <b-col cols="12" class="mb-1">
+                      <label>Coins Allotment</label>
+                    </b-col>
+
+                    <b-col cols="6" md="4" lg="3" class="mb-2 mb-md-0">
+                      <validation-provider
+                        #default="{ errors }"
+                        name="Brain Points"
+                        rules="required|integer"
+                      >
+                        <b-form-input
+                          id="brainPoints"
+                          v-model="pointsForm.brainPoints"
+                          :state="errors.length > 0 ? false : null"
+                          placeholder="Brain Points"
+                        />
+                        <small class="text-danger">{{ errors[0] }}</small>
+                      </validation-provider>
+                    </b-col>
+                    <b-col cols="6" md="4" lg="3" class="mb-2 mb-md-0">
+                      <validation-provider
+                        #default="{ errors }"
+                        name="Heart Points"
+                        rules="required|integer"
+                      >
+                        <b-form-input
+                          id="heartPoints"
+                          v-model="pointsForm.heartPoints"
+                          :state="errors.length > 0 ? false : null"
+                          placeholder="Heart Points"
+                        />
+                        <small class="text-danger">{{ errors[0] }}</small>
+                      </validation-provider>
+                    </b-col>
+                    <b-col
+                      cols="12"
+                      md="3"
+                      lg="3"
+                      class="mb-2 mb-md-0 ml-md-3 text-center text-md-left"
+                    >
+                      <b-button
+                        variant="primary"
+                        type="submit"
+                        class="addPointsBtn"
+                        @click.prevent="submitPoints"
+                        >Submit</b-button
+                      >
+                    </b-col>
+                  </b-form-row>
+                </b-form>
+              </validation-observer>
+              <div class="row mx-0">
+                <div
+                  v-for="(form, formIndex) in quizForm"
+                  :key="formIndex"
+                  class="w-100 text-right"
+                >
+                  <b-card>
+                    <b-tabs>
+                      <div class="row">
+                        <div class="col-6 col-sm-6 col-md-6 col-lg-6 mb-1">
+                          <b-card class="h-100" @click="addOption(formIndex)">
+                            <div class="addOptionCard mt-1">
+                              <img
+                                src="@/assets/images/missions/plus_icon.png"
+                                alt="add option"
                               />
-                            </b-form-group>
-                            <b-form-group
-                              class="text-left"
-                              label-cols="12"
-                              label-cols-md="2"
-                              label="Hindi"
-                              label-for="question_hindi"
-                            >
-                              <b-form-input
-                                id="question_hindi"
-                                placeholder="Question"
+                              <h3 class="mt-2">Add an Coin</h3>
+                            </div>
+                          </b-card>
+                        </div>
+
+                        <div class="col-6 col-sm-6 col-md-6 col-lg-6 mb-1">
+                          <b-card class="h-100" @click="addQuestion(formIndex)">
+                            <div class="addOptionCard mt-1">
+                              <img
+                                src="@/assets/images/missions/plus_icon.png"
+                                alt="add option"
                               />
-                            </b-form-group>
-                            <b-form-group
-                              class="text-left"
-                              label-cols="12"
-                              label-cols-md="2"
-                              label="Marathi"
-                              label-for="question_marathi"
+                              <h3 class="mt-2">Add an Question</h3>
+                            </div>
+                          </b-card>
+                        </div>
+                      </div>
+                      <div>
+                        <b-form class="text-left" v-if="questionForm == true">
+                          <b-form-group
+                            id="input-group-1"
+                            label="Email address:"
+                            label-for="input-1"
+                            description="We'll never share your email with anyone else."
+                          >
+                            <b-form-input
+                              id="input-1"
+                              type="email"
+                              placeholder="Enter email"
+                              required
+                            ></b-form-input>
+                          </b-form-group>
+                          <validation-observer ref="simpleRules">
+                            <b-form
+                              novalidate
+                              class="needs-validation"
+                              :id="'quizForm_' + formIndex"
+                              enctype="multipart/form-data"
                             >
-                              <b-form-input
-                                id="question_marathi"
-                                placeholder="Question"
-                              />
-                            </b-form-group>
-                          </b-col>
-                          <!-- audio uploads -->
-                          <b-col cols="12" md="5" class="mt-2 mt-md-0">
-                            <b-form-group>
                               <b-form-row>
-                                <b-col cols="6">
-                                  <b-form-input
-                                    :id="'audio_english_' + formIndex"
-                                    placeholder="English Audio"
-                                    v-model="form.englishAudio.name"
-                                    disabled
-                                /></b-col>
-                                <b-col cols="6" class="text-center">
+                                <!-- question type radio btns -->
+                                <div class="demo-inline-spacing mb-2">
+                                  <b-form-radio
+                                    v-model="form.pointsType"
+                                    name="brain"
+                                    value="brain"
+                                    class="custom-control-primary"
+                                  >
+                                    Brain Question
+                                  </b-form-radio>
+                                  <b-form-radio
+                                    v-model="form.pointsType"
+                                    name="heart"
+                                    value="heart"
+                                    class="custom-control-primary"
+                                  >
+                                    Heart Question
+                                  </b-form-radio>
+                                </div>
+                              </b-form-row>
+                              <p>English</p>
+                              <b-form-row>
+                                <!-- Question titles -->
+                                <b-col cols="12" md="7">
+                                  <b-form-group
+                                    class="text-left"
+                                    label-cols="12"
+                                    label-cols-md="2"
+                                  >
+                                    <b-form-input
+                                      id="question_english"
+                                      placeholder="Question Title"
+                                    />
+                                  </b-form-group>
+                                </b-col>
+                                <!-- audio uploads -->
+                                <b-col cols="12" md="5" class="mt-2 mt-md-0">
+                                  <b-form-group>
+                                    <b-form-row>
+                                      <b-col cols="6">
+                                        <b-form-input
+                                          :id="'audio_english_' + formIndex"
+                                          placeholder="Audio File"
+                                          v-model="form.englishAudio.name"
+                                          disabled
+                                      /></b-col>
+                                      <b-col cols="6" class="text-center">
+                                        <input
+                                          :id="
+                                            'englishAudioUpload_' + formIndex
+                                          "
+                                          @change="
+                                            addAudio(
+                                              $event,
+                                              'English',
+                                              formIndex
+                                            )
+                                          "
+                                          type="file"
+                                          hidden
+                                        />
+                                        <b-button
+                                          variant="primary"
+                                          class="addQuestionBtn"
+                                          @click="
+                                            openAudioInput(
+                                              `englishAudioUpload_${formIndex}`
+                                            )
+                                          "
+                                        >
+                                          Add audio
+                                        </b-button>
+                                      </b-col>
+                                    </b-form-row>
+                                  </b-form-group>
+                                </b-col>
+
+                                <!-- image upload :: start -->
+                                <b-col cols="12" md="7">
+                                  <b-form-group
+                                    class="text-left"
+                                    label-cols="12"
+                                    label-cols-md="2"
+                                  >
+                                    <b-form-input
+                                      :id="'audio_english_' + formIndex"
+                                      placeholder="Image Upload"
+                                      v-model="form.englishAudio.name"
+                                      disabled
+                                    />
+                                  </b-form-group>
+                                </b-col>
+
+                                <b-col cols="12" md="4" class="mt-2 mt-md-0">
                                   <input
                                     :id="'englishAudioUpload_' + formIndex"
                                     @change="
@@ -258,89 +366,63 @@
                                       )
                                     "
                                   >
-                                    Add audio
+                                    Add a Image
                                   </b-button>
                                 </b-col>
-                              </b-form-row>
-                            </b-form-group>
-                            <b-form-group>
-                              <b-form-row>
-                                <b-col cols="6">
-                                  <b-form-input
-                                    :id="'audio_hindi_' + formIndex"
-                                    placeholder="Hindi Audio"
-                                    v-model="form.hindiAudio.name"
-                                    disabled
-                                /></b-col>
-                                <b-col cols="6" class="text-center">
-                                  <input
-                                    :id="'hindiAudioUpload_' + formIndex"
-                                    @change="
-                                      addAudio($event, 'Hindi', formIndex)
-                                    "
-                                    type="file"
-                                    hidden
-                                  />
-                                  <b-button
-                                    variant="primary"
-                                    class="addQuestionBtn"
-                                    @click="
-                                      openAudioInput(
-                                        `hindiAudioUpload_${formIndex}`
-                                      )
-                                    "
-                                  >
-                                    Add audio
-                                  </b-button>
-                                </b-col>
-                              </b-form-row>
-                            </b-form-group>
-                            <b-form-group>
-                              <b-form-row>
-                                <b-col cols="6">
-                                  <b-form-input
-                                    id="audio_marathi"
-                                    placeholder="Marathi Audio"
-                                    v-model="form.marathiAudio.name"
-                                    disabled
-                                /></b-col>
-                                <b-col cols="6" class="text-center">
-                                  <input
-                                    :id="'marathiAudioUpload_' + formIndex"
-                                    @change="
-                                      addAudio($event, 'Marathi', formIndex)
-                                    "
-                                    type="file"
-                                    hidden
-                                  />
-                                  <b-button
-                                    variant="primary"
-                                    class="addQuestionBtn"
-                                    @click="
-                                      openAudioInput(
-                                        `marathiAudioUpload_${formIndex}`
-                                      )
-                                    "
-                                  >
-                                    Add audio
-                                  </b-button>
-                                </b-col>
-                              </b-form-row>
-                            </b-form-group>
-                          </b-col>
-                        </b-form-row>
-                      </b-form>
-                    </validation-observer>
-                  </b-tab>
-                  <b-tab title="Options">
-                    <div class="row mx-0">
-                      <div
-                        v-for="(option, optionIndex) in form.options"
-                        :key="optionIndex"
-                        class="col-12 col-sm-6 col-md-4 col-lg-3"
-                      >
-                        <b-card>
-                          <div class="fileUploadContainer mb-1 mt-1">
+                                <!-- image upload :: End -->
+
+                                <b-button
+                                  variant="primary"
+                                  class="addQuestionBtn"
+                                  @click="
+                                    openAudioInput(
+                                      `englishAudioUpload_${formIndex}`
+                                    )
+                                  "
+                                >
+                                  Add option
+                                </b-button>
+                                <br />
+                                <br />
+                                <b-form-row>
+                                  <b-col cols="12" md="7">
+                                    <b-form-group
+                                      class="text-left"
+                                      label-cols="12"
+                                      label-cols-md="2"
+                                    >
+                                      <b-form-input
+                                        id="question_english"
+                                        placeholder="Option Title"
+                                      />
+                                    </b-form-group>
+                                  </b-col>
+                                  <!-- audio uploads -->
+                                  <b-col cols="12" md="5" class="mt-2 mt-md-0">
+                                    <b-form-group>
+                                      <b-form-row>
+                                        <b-col cols="6">
+                                          <b-form-checkbox
+                                            id="checkbox-1"
+                                            name="checkbox-1"
+                                          >
+                                          </b-form-checkbox
+                                        ></b-col>
+                                        <b-col cols="6" class="text-center">
+                                        </b-col>
+                                      </b-form-row>
+                                    </b-form-group>
+                                  </b-col>
+
+                                  <!-- image upload :: start -->
+                                  <b-col cols="12" md="7">
+                                    <b-form-group
+                                      class="text-left"
+                                      label-cols="12"
+                                      label-cols-md="2"
+                                    > </b-form-group>
+
+                                      <div class="fileUploadContainer mb-1 mt-1">
                             <div class="text-center">
                               <img
                                 src="@/assets/images/svg/file-upload.svg"
@@ -361,67 +443,63 @@
                             <p :key="optionNameKey" class="m-0 previewImgName">
                               {{ option.imgName }}
                             </p>
-                            <!--          Remove Svg Icon-->
-                            <svg
-                              v-if="form.options.length > 0"
-                              @click="removeOption(formIndex, optionIndex)"
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              width="24"
-                              height="24"
-                              class="ml-2 cursor-pointer removeImg"
-                            >
-                              <path fill="none" d="M0 0h24v24H0z" />
-                              <path
-                                fill="#EC4899"
-                                d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
-                              />
-                            </svg>
-                          </div>
-                          <b-form-textarea
-                            :id="'Option_' + optionIndex"
-                            placeholder="Option"
-                            v-model="form.options[optionIndex].optionName"
-                            rows="3"
-                          />
-                        </b-card>
-                      </div>
-                      <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-1">
-                        <b-card class="h-100" @click="addOption(formIndex)">
-                          <div class="addOptionCard mt-1">
-                            <img
-                              src="@/assets/images/missions/plus_icon.png"
-                              alt="add option"
-                            />
-                            <h3 class="mt-2">Add an option</h3>
-                          </div>
-                        </b-card>
-                      </div>
-                    </div>
-                  </b-tab>
-                </b-tabs>
-                <hr />
-              </b-card>
-              <b-button
-                variant="primary"
-                class="addQuestionBtn mb-2 mr-4"
-                @click="addQuestion(formIndex)"
-              >
-                Add a question
-              </b-button>
+                                      </div>
 
-              <hr />
-            </div>
-            <div class="w-100 text-center">
-              <b-button
-                variant="primary"
-                class="addQuestionBtn mt-2"
-                @click="submitQuestion(formIndex)"
-              >
-                Submit
-              </b-button>
-            </div>
-          </div>
+
+                                  </b-col>
+
+                                  <b-col cols="12" md="4" class="mt-2 mt-md-0">
+                                    <input
+                                      :id="'englishAudioUpload_' + formIndex"
+                                      @change="
+                                        addAudio($event, 'English', formIndex)
+                                      "
+                                      type="file"
+                                      hidden
+                                    />
+                                    <b-button
+                                      variant="primary"
+                                      class="addQuestionBtn"
+                                      @click="
+                                        openAudioInput(
+                                          `englishAudioUpload_${formIndex}`
+                                        )
+                                      "
+                                    >
+                                      Add a Image
+                                    </b-button>
+                                  </b-col>
+                                </b-form-row>
+                              </b-form-row>
+                            </b-form>
+                          </validation-observer>
+                        </b-form>
+                      </div>
+                    </b-tabs>
+                    <hr />
+                  </b-card>
+                  <b-button
+                    variant="primary"
+                    class="addQuestionBtn mb-2 mr-4"
+                    @click="addQuestion(formIndex)"
+                  >
+                    Add a question
+                  </b-button>
+
+                  <hr />
+                </div>
+                <div class="w-100 text-center">
+                  <b-button
+                    variant="primary"
+                    class="addQuestionBtn mt-2"
+                    @click="submitQuestion(formIndex)"
+                  >
+                    Submit
+                  </b-button>
+                </div>
+              </div>
+            </b-tab>
+          </b-tabs>
         </b-tab>
       </b-tabs>
     </div>
@@ -512,6 +590,7 @@ export default {
       ],
       documentNameKey: 0,
       optionNameKey: 0,
+      questionForm: true,
       quizForm: [
         {
           pointsType: "brain",
@@ -621,12 +700,13 @@ export default {
         hindiQuestion: "",
         englishQuestion: "",
         marathiQuestion: "",
-        hindiAudio: {file:null , name:""},
-        englishAudio: {file:null , name:""},
-        marathiAudio: {file:null , name:""},
+        hindiAudio: { file: null, name: "" },
+        englishAudio: { file: null, name: "" },
+        marathiAudio: { file: null, name: "" },
         questionImages: [{ img: null, name: "" }],
         options: [{ img: null, imgName: "", optionName: "" }],
       };
+      this.questionForm = true;
       // this.quizForm.splice(formIndex+1,0,form)
       const insert = (arr, index, newItem) => [
         // part of the array before the specified index
