@@ -5,7 +5,9 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "firebase": "firebase deploy",
+    "build & deploy": "vue-cli-service build && firebase deploy"
   },
   "dependencies": {
     "@casl/ability": "4.1.6",

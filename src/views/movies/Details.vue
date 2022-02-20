@@ -12,7 +12,15 @@
           </p>
         </div>
         <div
-          class="col-12 col-sm-4 col-md-3 mt-2 mt-lg-0 pr-xl-4 d-flex flex-wrap flex-lg-nowrap align-items-end justify-content-end"
+          class="
+            col-12 col-sm-4 col-md-3
+            mt-2 mt-lg-0
+            pr-xl-4
+            d-flex
+            flex-wrap flex-lg-nowrap
+            align-items-end
+            justify-content-end
+          "
         >
           <img
             src="@/assets/images/movies/density.png"
@@ -68,6 +76,7 @@ export default {
     return {
       description: "",
       title: "",
+      subjectId: this.$route.params.subject,
       levelId: this.$route.params.level,
       topicId: this.$route.params.topic,
       breadcrumbs: [
@@ -76,12 +85,15 @@ export default {
           to: { name: "movies-list" },
         },
         {
-          text: this.$route.params.subject,
+          text: "",
           to: { name: `movies-subject` },
         },
         {
-          text: this.$route.params.level,
+          text: "",
           to: { name: `movies-level` },
+        },
+        {
+          text: "",
           active: true,
         },
       ],
@@ -94,17 +106,38 @@ export default {
     axios
       .post("admin/v1/movies/topics", postData)
       .then(({ data }) => {
-        console.log(data);
         data.topics.forEach((element) => {
           if (element.id == this.topicId) {
-            console.log(element.id == this.topicId);
             this.description = element.description;
             this.title = element.title;
           }
         });
       })
       .catch((error) => {
-        console.log(error);
+        console.error(error);
+      });
+
+    axios
+      .post("/admin/v1/movies/get-subject", { subject_id: this.subjectId })
+      .then(({ data }) => {
+        this.breadcrumbs[1].text = data.subjects[0].name;
+        data.subjects[0].levels.forEach((level) => {
+          if (level.id == this.levelId) {
+            this.breadcrumbs[2].text = level.level + '';
+          }
+        });
+      })
+      .catch((resp) => {
+        console.error(resp);
+      });
+
+    axios
+      .post("/admin/v1/movies/get-topic", { topic_id: this.topicId })
+      .then(({ data }) => {
+        this.breadcrumbs[3].text = data.topic[0].title;
+      })
+      .catch((resp) => {
+        console.error(resp);
       });
   },
 };

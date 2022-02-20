@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-breadcrumb class="breadcrumb-slash" :items="breadcrumbs" />
-    <b-card class="subNameContainer" >
+    <b-card class="subNameContainer">
       <h1 class="subName">
         {{ subjectName }}
       </h1>
@@ -151,15 +151,14 @@ export default {
   data() {
     return {
       subjectId: this.$route.params.subject,
-    
+
       breadcrumbs: [
         {
           text: "Movies",
           to: { name: "movies-list" },
         },
         {
-          text: this.$route.params.subject,
-          to: { name: `movies-subject` },
+          text: "",
           active: true,
         },
       ],
@@ -180,38 +179,28 @@ export default {
       totalRewards: "",
       totalTopic: "",
       levels: [],
-      subjectName:"",
+      subjectName: "",
       componentKey: 0,
     };
   },
   created() {
-    console.log(this.subjectId);
-    axios
-      .get("/admin/v1/movies/subjects")
-      .then(({ data }) => {
-        console.log(data.subjects);
-        data.subjects.forEach((element) => {
-          if (element.id == this.subjectId) {
-              this.subjectName= element.name;
-            this.levels = element.levels;
-           
-            console.log( this.levels);
-          }
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    this.getSubject();
   },
   methods: {
+    getSubject() {
+      axios
+        .post("/admin/v1/movies/get-subject", { subject_id: this.subjectId })
+        .then(({ data }) => {
+          console.log(data.subjects);
+          this.breadcrumbs[1].text = data.subjects[0].name;
+          this.subjectName = data.subjects[0].name;
+          this.levels = data.subjects[0].levels;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     addLevel() {
-      this.levels.push({
-        subject_id: this.subjectId,
-        levelName: this.levelName,
-        levelDescription: this.levelDescription,
-        totalRewards: this.totalRewards,
-        totalTopic: this.totalTopic,
-      });
       var levelData = {
         subject_id: this.subjectId,
         level: this.levelName,
@@ -222,15 +211,23 @@ export default {
       axios
         .post("/admin/v1/movies/create-level", levelData)
         .then(({ data }) => {
+          // this.levels.push({
+          //   subject_id: this.subjectId,
+          //   level: this.levelName,
+          //   description: this.levelDescription,
+          //   total_rewards: this.totalRewards,
+          //   total_question: this.totalTopic,
+          // });
+          this.getSubject();
           console.log(data);
           this.$bvModal.hide("add-level-modal");
           this.levelName = "";
           this.levelDescription = "";
           this.totalRewards = "";
           this.totalTopic = "";
-           this.componentKey += 1;  
+          this.componentKey += 1;
         })
-        .catch(({ error }) => {
+        .catch((error) => {
           console.log(error);
         });
     },
@@ -268,6 +265,7 @@ export default {
   padding: 10px 15px;
   box-shadow: 0 2px 5px rgb(167, 166, 166) !important;
   height: 100%;
+  min-height: 200px;
 
   .level_card_content {
     display: flex;
@@ -304,7 +302,7 @@ export default {
   border-radius: 20px;
   box-shadow: 0 2px 5px rgb(167, 166, 166) !important;
   height: 100%;
-  min-height: 300px;
+  min-height: 200px;
   text-align: center;
 
   .mission_icon_plus {

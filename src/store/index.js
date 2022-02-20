@@ -1,11 +1,12 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-
-// Modules
-import ecommerceStoreModule from '@/views/apps/e-commerce/eCommerceStoreModule'
 import app from './app'
 import appConfig from './app-config'
+import breadcrumbs from './breadcrumbs'
+import ecommerceStoreModule from '@/views/apps/e-commerce/eCommerceStoreModule'
 import verticalMenu from './vertical-menu'
+
+// Modules
 
 Vue.use(Vuex)
 
@@ -15,6 +16,7 @@ export default new Vuex.Store({
     appConfig,
     verticalMenu,
     'app-ecommerce': ecommerceStoreModule,
+    breadcrumbs,
   },
   strict: process.env.DEV,
 })

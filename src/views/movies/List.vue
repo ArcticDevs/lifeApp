@@ -13,15 +13,13 @@
                 v-for="(subject, subIndex) in subjects"
                 :key="subIndex"
               >
-              
-                <router-link :to="'/movies/'+subject.id">
+                <router-link :to="'/movies/' + subject.id">
                   <b-card class="mission_card text-center">
                     <img
                       src="@/assets/images/missions/mission_icon.png"
                       alt=""
                       class="mission_icon"
                     />
-                  
 
                     <h3 class="mt-2">{{ subject.name }}</h3>
                   </b-card>
@@ -137,20 +135,22 @@ export default {
     };
   },
   created() {
-    axios
-      .get("/admin/v1/movies/subjects")
-      .then((response) => {
-        console.log(response.data.subjects);
-        this.subjects =  response.data.subjects;
-        console.log(this.subjects)
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    this.getSubjectsList();
   },
   methods: {
+    getSubjectsList() {
+      axios
+        .get("/admin/v1/movies/subjects")
+        .then((response) => {
+          console.log(response.data.subjects);
+          this.subjects = response.data.subjects;
+          console.log(this.subjects);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     addSubject() {
-      this.subjects.push(this.subjectName);
       var subjectData = {
         name: this.subjectName,
       };
@@ -158,6 +158,7 @@ export default {
         .post("/admin/v1/movies/create-subject", subjectData)
         .then((response) => {
           console.log(response);
+          this.getSubjectsList();
         })
         .catch((error) => {
           console.log(error);

@@ -1,28 +1,36 @@
 <template>
   <div>
     <b-breadcrumb class="breadcrumb-slash" :items="breadcrumbs" />
-    <b-card class="subNameContainer bg_orange">
+    <b-card class="subNameContainer bg_orange" v-if="topics">
       <div class="row m-0">
         <div class="col-8 col-md-6">
           <h2 class="subName">
-            {{ levelId[0].toUpperCase() + levelId.slice(1) }}
+            {{ levelName }}
           </h2>
           <p>
-            {{ topicDescription }}
+            {{ levelDescription }}
           </p>
         </div>
         <div
-          class="col-12 col-md-7 col-lg-6 mt-2 mt-lg-0 pr-xl-4 d-flex flex-wrap flex-lg-nowrap align-items-end justify-content-lg-end"
+          class="
+            col-12 col-md-6 col-lg-6
+            mt-2 mt-lg-0
+            pr-xl-4
+            d-flex
+            flex-wrap flex-lg-nowrap
+            align-items-end
+            justify-content-lg-end
+          "
         >
           <span class="ml-1 ml-lg-0"
             ><img src="@/assets/images/movies/svg/Star.svg" class="mr-1" />Total
-            Reward : <span> 50 Gold Coins</span></span
+            Reward : <span> {{ totalRewards }} Coins</span></span
           >
-          <span class="ml-lg-3 ml-1 mt-1 mt-lg-0"
+          <span class="ml-lg-2 ml-1 mt-1 mt-lg-0"
             ><img
               src="@/assets/images/movies/svg/Chart.svg"
               class="mr-1"
-            />Total Concepts : <span>3</span></span
+            />Total Concepts : <span>{{ totalQuestions }}</span></span
           >
         </div>
         <img
@@ -38,29 +46,35 @@
         v-for="(topic, topicIndex) in topics"
         :key="topicIndex"
       >
-      <router-link :to="$route.path +'/details/'+ topic.id">
-        <b-card class="level_card">
-          <div class="level_card_content pr-0">
-            <h2>{{ topic.title }}</h2>
-            <div class="descriptionContainer">
-              <p>
-                {{ topic.description }}
-              </p>
+        <router-link :to="$route.path + '/' + topic.id">
+          <b-card class="level_card">
+            <div class="level_card_content pr-0">
+              <h2>{{ topic.title }}</h2>
+              <div class="descriptionContainer">
+                <p>
+                  {{ topic.description }}
+                </p>
+              </div>
             </div>
-          </div>
 
-          <img
-            :src="topic.media.url"
-            :alt="topic.media.name"
-            class="level_card_icon"
-          />
-        </b-card>
-      </router-link>
+            <img
+              :src="'https://media.gappubobo.com/'+topic.media.url"
+              :alt="topic.media.name"
+              class="level_card_icon"
+            />
+          </b-card>
+        </router-link>
       </div>
       <div class="col-12 col-md-4 col-xl-3 mb-3">
         <b-card class="new_level_card" v-b-modal.add-topic-modal>
           <div
-            class="h-100 d-flex flex-column justify-content-center align-items-center"
+            class="
+              h-100
+              d-flex
+              flex-column
+              justify-content-center
+              align-items-center
+            "
           >
             <img
               src="@/assets/images/missions/plus_icon.png"
@@ -193,20 +207,21 @@ export default {
     return {
       levelId: this.$route.params.level,
       subjectId: this.$route.params.subject,
-      topicDescription:
-        "Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print, graphic or web designs. The passage is attributed to an unknown typesetter in the .",
-
+      levelName: "",
+      levelDescription: "",
+      totalRewards: 0,
+      totalQuestions: 0,
       breadcrumbs: [
         {
           text: "Movies",
           to: { name: "movies-list" },
         },
         {
-          text: this.$route.params.subject,
+          text: "",
           to: { name: `movies-subject` },
         },
         {
-          text: this.$route.params.level,
+          text: "",
           to: { name: `movies-level` },
           active: true,
         },
@@ -224,17 +239,39 @@ export default {
   created() {
     console.log(this.subjectId);
     axios
-      .post("admin/v1/movies/topics", { level_id: this.levelId })
+      .post("/admin/v1/movies/get-subject", { subject_id: this.subjectId })
       .then(({ data }) => {
-        this.topics = data.topics;
-        console.log(this.topics)
+        console.log(data);
+        this.breadcrumbs[1].text = data.subjects[0].name;
+        data.subjects[0].levels.forEach((level) => {
+          if (level.id == this.levelId) {
+            this.breadcrumbs[2].text = level.level + '';
+            this.levelName = level.level;
+            this.levelDescription = level.description;
+            this.totalRewards = level.total_rewards;
+            this.totalQuestions = level.total_question;
+          }
+        });
       })
-      .catch((error) => {
-        console.log(error);
+      .catch((resp) => {
+        console.error(resp);
       });
+
+    this.getTopics();
   },
 
   methods: {
+    getTopics() {
+      axios
+        .post("admin/v1/movies/topics", { level_id: this.levelId })
+        .then(({ data }) => {
+          this.topics = data.topics;
+          console.log(this.topics);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     onImageSelected(e) {
       let self = this;
       if (e.target.files && e.target.files[0]) {
@@ -243,7 +280,7 @@ export default {
         reader.onload = function (f) {
           document.getElementById("previewImg").src = reader.result;
           document.getElementById("previewImg").style.display = "block";
-          self.topicForm.topicImg.img = e.target.files[0] ;
+          self.topicForm.topicImg.img = e.target.files[0];
         };
         reader.readAsDataURL(e.target.files[0]);
         // self.topicForm.topicImg.img = e.target.files[0];
@@ -258,28 +295,26 @@ export default {
       self.imageNameKey++;
     },
     addTopic() {
-      this.topics.push({
-        topicName: this.topicForm.topicName,
-        topicDescription: this.topicForm.topicDescription,
-        topicImg: this.topicForm.topicImg.img,
-      });
-      // var topicData = {
-      //   level_id:this.levelId,
-      //   title : this.topicForm.name,
-      //   description : this.topicForm.topicDescription,
-      // }
-
       var topicData = new FormData();
       topicData.append("level_id", this.levelId);
       topicData.append("title", this.topicForm.topicName);
       topicData.append("description", this.topicForm.topicDescription);
-      topicData.append("flag",0);
+      topicData.append("flag", 0);
       topicData.append("image", this.topicForm.topicImg.img);
 
-     
       axios
         .post("admin/v1/movies/create-topic", topicData)
         .then(({ data }) => {
+          // this.topics.push({
+          //   title: this.topicForm.topicName,
+          //   description: this.topicForm.topicDescription,
+          //   media: {
+          //     name: this.topicForm.topicImg.name,
+          //     url: document.getElementById("previewImg").src,
+          //   },
+          // });
+          this.getTopics();
+
           console.log(data);
           this.$bvModal.hide("add-topic-modal");
 
@@ -308,7 +343,7 @@ export default {
 
   .level_icon {
     position: absolute;
-    right: 50px;
+    right: 5px;
     top: -50px;
     height: 150px;
   }
@@ -322,15 +357,14 @@ export default {
 .level_card {
   position: relative;
   border-radius: 20px;
-  // padding: 10px 15px;
   box-shadow: 0 2px 5px rgb(167, 166, 166) !important;
   height: 100%;
+  min-height: 200px;
 
   .level_card_content {
     height: 100%;
     display: flex;
     flex-direction: column;
-    // justify-content: space-between;
     color: #000;
 
     & > h2 {
@@ -342,15 +376,6 @@ export default {
     .descriptionContainer {
       margin-top: 140px;
     }
-
-    // .StartBtn {
-    //   color: #ff9501;
-    //   background: #fff;
-    //   width: fit-content;
-    //   padding: 10px 50px;
-    //   border-radius: 20px;
-    //   font-size: 1.2rem;
-    // }
   }
 
   .level_card_icon {
@@ -368,7 +393,7 @@ export default {
   border-radius: 20px;
   box-shadow: 0 2px 5px rgb(167, 166, 166) !important;
   height: 100%;
-  min-height: 300px;
+  min-height: 200px;
   text-align: center;
 
   .mission_icon_plus {

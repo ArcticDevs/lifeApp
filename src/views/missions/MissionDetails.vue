@@ -1,15 +1,12 @@
 <template>
   <div v-if="mission">
     <b-breadcrumb class="breadcrumb-slash" :items="breadcrumbs" />
-    <b-card class="subNameContainer bg_orange">
+    <b-card class="subNameContainer">
       <div class="row m-0">
         <div class="col-12 col-sm-8 col-md-9">
           <h2 class="subName">
             {{ mission.name[0].toUpperCase() + mission.name.slice(1) }}
           </h2>
-          <!-- <p>
-            {{ topicDescription }}
-          </p> -->
         </div>
         <div
           class="
@@ -30,52 +27,340 @@
         </div>
       </div>
     </b-card>
+    <div class="w-100 text-right my-2">
+      <div
+        class="btn btn-primary"
+        @click="isEditable = true"
+        v-if="!isEditable"
+      >
+        Edit Mission
+      </div>
+      <div
+        class="btn btn-primary"
+        @click="isEditable = false"
+        v-if="isEditable"
+      >
+        Disable Edit
+      </div>
+    </div>
+    <!-- Mission Form::begin -->
+    <b-card :title="cardTitle" class="add_mission">
+      <hr />
+
+      <validation-observer ref="simpleRules">
+        <b-form
+          novalidate
+          class="needs-validation"
+          id="missionForm"
+          enctype="multipart/form-data"
+        >
+          <b-form-row>
+            <!-- mission type radio btns -->
+            <div class="demo-inline-spacing mb-2">
+              <b-form-radio
+                v-model="missionForm.SelectedMissionType"
+                name="brain"
+                value="brain"
+                class="custom-control-primary"
+                :disabled="!isEditable"
+              >
+                Brain Mission
+              </b-form-radio>
+              <b-form-radio
+                v-model="missionForm.SelectedMissionType"
+                name="heart"
+                value="heart"
+                class="custom-control-primary"
+                :disabled="!isEditable"
+              >
+                Heart Mission
+              </b-form-radio>
+            </div>
+
+            <!-- Mission name input -->
+            <b-col md="12" class="mb-2">
+              <label for="missionName">Mission Name:</label>
+              <validation-provider
+                #default="{ errors }"
+                name="Mission Name"
+                rules="required"
+              >
+                <b-form-input
+                  id="missionName"
+                  v-model="missionForm.missionName"
+                  :state="errors.length > 0 ? false : null"
+                  placeholder="Mission Name"
+                  :disabled="!isEditable"
+                />
+                <small class="text-danger">{{ errors[0] }}</small>
+              </validation-provider>
+            </b-col>
+
+            <!-- coins allotment -->
+            <b-col md="12" class="mb-2">
+              <label for="coins">Coins Allotment:</label>
+              <b-form-row>
+                <b-col md="6" class="mb-2 mb-md-0">
+                  <validation-provider
+                    #default="{ errors }"
+                    name="Brain Coins"
+                    rules="required|integer"
+                  >
+                    <b-form-input
+                      id="brainCoins"
+                      v-model="missionForm.brainCoins"
+                      :state="errors.length > 0 ? false : null"
+                      placeholder="Brain Coins"
+                      :disabled="!isEditable"
+                    />
+                    <small class="text-danger">{{ errors[0] }}</small>
+                  </validation-provider>
+                </b-col>
+                <b-col md="6" class="mb-2 mb-md-0">
+                  <validation-provider
+                    #default="{ errors }"
+                    name="Heart Coins"
+                    rules="required|integer"
+                  >
+                    <b-form-input
+                      id="heartCoins"
+                      v-model="missionForm.heartCoins"
+                      :state="errors.length > 0 ? false : null"
+                      placeholder="Heart Coins"
+                      :disabled="!isEditable"
+                    />
+                    <small class="text-danger">{{ errors[0] }}</small>
+                  </validation-provider>
+                </b-col>
+              </b-form-row>
+            </b-col>
+
+            <div class="w-100 mt-3">
+              <div class="demo-inline-spacing mb-2">
+                <b-form-radio
+                  v-for="(lang, langIndex) in langs"
+                  :key="langIndex"
+                  v-model="locale"
+                  :name="lang.name"
+                  :value="lang.code"
+                  class="custom-control-primary"
+                  :disabled="!isEditable"
+                >
+                  {{ lang.name }}
+                </b-form-radio>
+              </div>
+              <b-card-text>
+                <!-- images -->
+                <b-form-row
+                  class="w-100 d-flex justify-content-center align-items-center"
+                >
+                  <b-col cols="12" md="8" class="mb-2 mr-md-3">
+                    <label>Images</label>
+                    <b-form-group
+                      v-for="(image, index) in missionForm.images"
+                      :key="index"
+                      :disabled="!isEditable"
+                    >
+                      <div class="d-flex align-items-center">
+                        <!-- image upload container -->
+                        <div class="fileUploadContainer mb-1 mr-2">
+                          <div class="text-center">
+                            <img
+                              src="@/assets/images/svg/file-upload.svg"
+                              alt="file upload"
+                            />
+                            <span class="d-block">Click to upload </span>
+                          </div>
+                          <b-form-file
+                            accept="image/*"
+                            @change="onImageSelected($event, index, locale)"
+                            :id="'prodImg' + index"
+                          ></b-form-file>
+                          <!-- <img src="" alt="" :id="'previewImg'+index" class="previewImg" /> -->
+                          <p
+                            :id="'previewImgName' + index"
+                            class="m-0 previewImgName"
+                            :key="imageNameKey"
+                          >
+                            {{ image.name }}
+                          </p>
+                          <!--          Remove Svg Icon-->
+                          <svg
+                            v-show="missionForm.images.length > 1"
+                            @click="removeImage(index)"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            height="24"
+                            class="ml-2 cursor-pointer removeImg"
+                          >
+                            <path fill="none" d="M0 0h24v24H0z" />
+                            <path
+                              fill="#EC4899"
+                              d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
+                            />
+                          </svg>
+                        </div>
+
+                        <!-- Add button -->
+                        <b-button
+                          variant="primary"
+                          v-show="index === missionForm.images.length - 1"
+                          @click="addImage"
+                        >
+                          Add
+                        </b-button>
+                      </div>
+                    </b-form-group>
+                  </b-col>
+                </b-form-row>
+
+                <!-- Question -->
+                <b-col md="12" class="mb-2">
+                  <label for="question">Question:</label>
+                  <validation-provider
+                    #default="{ errors }"
+                    name="Question"
+                    rules="required"
+                  >
+                    <b-form-input
+                      id="question"
+                      v-model="missionForm.question"
+                      :state="errors.length > 0 ? false : null"
+                      placeholder="Question"
+                      :disabled="!isEditable"
+                    />
+                    <small class="text-danger">{{ errors[0] }}</small>
+                  </validation-provider>
+                </b-col>
+
+                <!-- Upload document -->
+                <b-form-row
+                  class="w-100 d-flex justify-content-center align-items-center"
+                >
+                  <b-col cols="12" md="8" class="mb-2 mr-md-3">
+                    <label>Upload Document</label>
+
+                    <div class="d-flex align-items-center">
+                      <div class="fileUploadContainer mb-1 mr-2">
+                        <div class="text-center">
+                          <img
+                            src="@/assets/images/svg/file-upload.svg"
+                            alt="file upload"
+                          />
+                          <span class="d-block">Click to upload document</span>
+                        </div>
+                        <b-form-file
+                          @change="onDocumentSelected($event)"
+                          id="document"
+                          :disabled="!isEditable"
+                        ></b-form-file>
+                        <!-- <img src="" alt="" :id="'previewImg'+index" class="previewImg" /> -->
+                        <p
+                          id="documentName"
+                          class="m-0 previewImgName"
+                          :key="documentNameKey"
+                        >
+                          {{ missionForm.document.name }}
+                        </p>
+                        <!--          Remove Svg Icon-->
+                        <svg
+                          v-show="
+                            missionForm.document.file != null && isEditable
+                          "
+                          @click="removeDocument()"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          height="24"
+                          class="ml-2 cursor-pointer removeImg"
+                        >
+                          <path fill="none" d="M0 0h24v24H0z" />
+                          <path
+                            fill="#EC4899"
+                            d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </b-col>
+                </b-form-row>
+              </b-card-text>
+            </div>
+
+            <b-col cols="12" md="10" v-if="isEditable">
+              <div class="text-center">
+                <b-button
+                  variant="primary"
+                  type="submit"
+                  @click.prevent="onSubmit()"
+                  >Submit</b-button
+                >
+              </div>
+            </b-col>
+          </b-form-row>
+        </b-form>
+      </validation-observer>
+    </b-card>
+    <!-- Mission Form::end -->
   </div>
 </template>
 
 <script>
 import axios from "axios";
 
-import BCardCode from "@core/components/b-card-code";
 import {
   BBreadcrumb,
   BCard,
   BRow,
+  BTabs,
+  BTab,
+  BFormRow,
   BCol,
-  BFormGroup,
-  BFormFile,
-  BFormInput,
-  BFormTextarea,
-  BFormCheckbox,
-  BForm,
   BButton,
-  BTable,
+  BFormInput,
+  BFormGroup,
+  BForm,
+  BCardText,
+  BFormFile,
+  BFormInvalidFeedback,
+  BFormRadio,
 } from "bootstrap-vue";
+import vSelect from "vue-select";
+import Ripple from "vue-ripple-directive";
+import { ValidationProvider, ValidationObserver } from "vee-validate";
+import { required, email, integer } from "@validations";
 
 export default {
   components: {
+    ValidationProvider,
+    ValidationObserver,
     BBreadcrumb,
-    BCardCode,
     BCard,
-    BRow,
-    BCol,
-    BFormFile,
-    BFormGroup,
+    BCardText,
     BFormInput,
-    BFormTextarea,
-    BFormCheckbox,
+    BFormGroup,
     BForm,
+    BRow,
+    BTabs,
+    BTab,
+    BFormRow,
+    BCol,
     BButton,
-    BTable,
+    vSelect,
+    BFormFile,
+    BFormInvalidFeedback,
+    BFormRadio,
+  },
+  directives: {
+    Ripple,
   },
   data() {
     return {
+      isEditable: false,
+      cardTitle: "Mission Details",
       missionId: this.$route.params.missionId,
-      mission: '',
-
-      topicDescription:
-        "Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print, graphic or web designs. The passage is attributed to an unknown typesetter in the .",
-
+      mission: "",
       breadcrumbs: [
         {
           text: "Missions",
@@ -90,33 +375,182 @@ export default {
           active: true,
         },
       ],
+      missionForm: {
+        SelectedMissionType: "brain",
+        missionName: "",
+        brainCoins: "",
+        heartCoins: "",
+        question: "",
+        images: [{}],
+        document: { file: null, name: "" },
+      },
+      locale: "En",
+      required,
+      email,
+      integer,
+      imageNameKey: 0,
+      documentNameKey: 0,
+      langs: [
+        { name: "English", code: "En" },
+        { name: "Hindi", code: "Hn" },
+        { name: "Marathi", code: "Ma" },
+      ],
     };
   },
   created() {
     axios
       .get("/admin/v1/missions/list")
       .then((response) => {
-        console.log(response);
         response.data.missions.forEach((mission) => {
           if (mission.id == this.missionId) {
             this.mission = mission;
-            this.breadcrumbs[2].text=mission.name;
+            this.breadcrumbs[2].text = mission.name;
           }
         });
-        // console.log(this.mission);
+        console.log(this.mission);
+        let images = [{}];
+        images.length = this.mission.mission_images.length;
+        this.mission.mission_images.forEach((item, i) => {
+          images[i].img = item.mission_media_id.url;
+          images[i].name = item.mission_media_id.name;
+        });
+        let missionForm = {
+          SelectedMissionType: this.mission.type,
+          missionName: this.mission.name,
+          brainCoins: this.mission.brain_point,
+          heartCoins: this.mission.heart_point,
+          question: this.mission.question[0].question_title,
+          images: images,
+          document: {
+            file: this.mission.question[0].media.url,
+            name: this.mission.question[0].media.name,
+          },
+        };
+        this.missionForm = missionForm;
+        this.locale = this.mission.question[0].locale;
       })
       .catch((error) => {
         console.log(error);
       });
   },
+  methods: {
+    onSubmit() {
+      var postData = {
+        mission_name: this.missionForm.missionName,
+        brain_points: this.missionForm.brainCoins,
+        heart_points: this.missionForm.heartCoins,
+        mission_type: this.missionForm.SelectedMissionType,
+      };
+      console.log(postData);
+      let self = this;
+      console.log(postData);
+      axios
+        .post(`/admin/v1/missions/create`, postData)
+        .then((response) => {
+          console.log(response);
+
+          self.missionId = response.data.data;
+          var imageFormData = new FormData();
+          var questionFromData = new FormData();
+
+          imageFormData.append("locale", this.locale);
+          questionFromData.append("locale", this.locale);
+
+          imageFormData.append("mission_id", self.missionId);
+          questionFromData.append("mission_id", self.missionId);
+          questionFromData.append("question_title", self.missionForm.question);
+          questionFromData.append(
+            "question_document",
+            self.missionForm.document.file
+          );
+
+          self.missionForm.images.forEach((element, i) => {
+            imageFormData.append("image", element.img);
+          });
+
+          axios
+            .post("/admin/v1/missions/add-mission-image", imageFormData)
+            .then((response) => {
+              console.log(response);
+
+              axios
+                .post("admin/v1/missions/add-question", questionFromData)
+                .then((response) => {
+                  console.log(response);
+                  self
+                    .$swal({
+                      title: "Mission added!",
+                      icon: "success",
+                      customClass: {
+                        confirmButton: "btn btn-primary",
+                      },
+                      buttonsStyling: false,
+                    })
+                    .then(() => {
+                      self.$router.push("/mission/list");
+                    });
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+    onImageSelected(e, index) {
+      let self = this;
+      if (e.target.files && e.target.files[0]) {
+        let name = e.target.files[0].name;
+        var reader = new FileReader();
+        reader.readAsDataURL(e.target.files[0]);
+        self.missionForm.images[index].img = e.target.files[0];
+        self.missionForm.images[index].name = name;
+
+        self.imageNameKey++;
+      }
+    },
+    addImage() {
+      this.missionForm.images.push({});
+    },
+    removeImage(index) {
+      if (this.missionForm.images.length === 1) {
+        this.missionForm.images = [{}];
+      } else {
+        this.missionForm.images.splice(index, 1);
+      }
+      this.imageNameKey++;
+    },
+    onDocumentSelected(e) {
+      let self = this;
+      if (e.target.files && e.target.files[0]) {
+        let name = e.target.files[0].name;
+        var reader = new FileReader();
+        reader.readAsDataURL(e.target.files[0]);
+        self.missionForm.document.file = e.target.files[0];
+        self.missionForm.document.name = name;
+        self.documentNameKey++;
+      }
+    },
+    removeDocument() {
+      this.missionForm.document = { file: null, name: "" };
+    },
+  },
 };
 </script>
 
-<style scoped lang="scss">
+
+
+<style lang="scss">
+@import "@core/scss/vue/libs/vue-select.scss";
 .subNameContainer {
   border-radius: 20px;
   position: relative;
-  height:100px;
+  height: 100px;
 
   .subName {
     color: #000;
@@ -127,12 +561,60 @@ export default {
     height: 150px;
     position: absolute;
     top: -70px;
-
   }
 }
-.addDetailsBtn {
-  border-radius: 29px;
-  padding: 10px 30px;
-  font-size: 1.2rem;
+
+.add_mission {
+  #missionForm {
+    max-width: 900px;
+    margin: auto;
+
+    label {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .fileUploadContainer {
+      background: #fff;
+      box-shadow: 0px 2px 5px #33333326;
+      border: 1px solid #ebebeb;
+      border-radius: 20px;
+      width: 80%;
+      height: 100%;
+      max-height: 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+
+      &:hover {
+        box-shadow: 0 5px 10px rgb(214, 213, 213);
+        color: #747474;
+      }
+
+      .b-form-file {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        font-size: 50rem;
+        opacity: 0;
+      }
+      .previewImgName {
+        color: rgb(76, 212, 48);
+      }
+      .btn {
+        z-index: 100;
+      }
+    }
+
+    .removeImg {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+    }
+  }
 }
 </style>
