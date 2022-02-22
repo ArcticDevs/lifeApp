@@ -32,26 +32,36 @@
     </b-card>
 
     <div class="w-100 mt-3">
-      <b-tabs>
+      <b-tabs v-model="tabIndex">
         <b-tab
           v-for="(lang, langIndex) in langs"
           :key="langIndex"
           :title="lang.name"
-          @click="locale = lang.code"
-          :disabled="lang.name !== 'English'"
+          @click="setActiveLangTab(lang)"
         >
           <b-tabs>
             <b-tab title="Movie">
               <b-card>
-                <div class="w-100 text-right">
-                  <div class="btn btn-outline-primary mr-1">Edit Movie</div>
-                  <div class="btn btn-outline-danger">Delete Movie</div>
+                <div class="w-100 text-right" v-if="lang.isMoviePosted">
+                  <div
+                    class="btn btn-outline-primary mr-1"
+                    @click="lang.editMovie = !lang.editMovie"
+                  >
+                    <span v-if="!lang.editMovie"> Edit Movie</span>
+                    <span v-else>Disable Edit</span>
+                  </div>
+                  <div
+                    class="btn btn-outline-danger"
+                    @click="deleteMovie(lang)"
+                  >
+                    Delete Movie
+                  </div>
                 </div>
                 <validation-observer ref="movieRules">
                   <b-form
                     novalidate
                     class="needs-validation mb-2"
-                    id="movieForm"
+                    :id="'movieForm' + langIndex"
                     enctype="multipart/form-data"
                   >
                     <b-form-row class="mb-2">
@@ -66,11 +76,11 @@
                           rules="required|integer"
                         >
                           <b-form-input
-                            id="movieBrainPoints"
-                            v-model="movieForm.brain_points"
+                            :id="'movieBrainPoints' + langIndex"
+                            v-model="lang.movieForm.brain_points"
                             :state="errors.length > 0 ? false : null"
                             placeholder="Brain Points"
-                            :disabled="lang.isMoviePosted"
+                            :disabled="lang.isMoviePosted && !lang.editMovie"
                           />
                           <small class="text-danger">{{ errors[0] }}</small>
                         </validation-provider>
@@ -82,11 +92,11 @@
                           rules="required|integer"
                         >
                           <b-form-input
-                            id="movieHeartPoints"
-                            v-model="movieForm.heart_points"
+                            :id="'movieHeartPoints' + langIndex"
+                            v-model="lang.movieForm.heart_points"
                             :state="errors.length > 0 ? false : null"
                             placeholder="Heart Points"
-                            :disabled="lang.isMoviePosted"
+                            :disabled="lang.isMoviePosted && !lang.editMovie"
                           />
                           <small class="text-danger">{{ errors[0] }}</small>
                         </validation-provider>
@@ -97,20 +107,20 @@
                       <b-col cols="12">
                         <div class="demo-inline-spacing mb-2">
                           <b-form-radio
-                            v-model="movieForm.movie_type"
+                            v-model="lang.movieForm.movie_type"
                             name="brain"
                             value="brain"
                             class="custom-control-primary"
-                            :disabled="lang.isMoviePosted"
+                            :disabled="lang.isMoviePosted && !lang.editMovie"
                           >
                             Brain Mission
                           </b-form-radio>
                           <b-form-radio
-                            v-model="movieForm.movie_type"
+                            v-model="lang.movieForm.movie_type"
                             name="heart"
                             value="heart"
                             class="custom-control-primary"
-                            :disabled="lang.isMoviePosted"
+                            :disabled="lang.isMoviePosted && !lang.editMovie"
                           >
                             Heart Mission
                           </b-form-radio>
@@ -129,10 +139,10 @@
                             rules="required"
                           >
                             <b-form-input
-                              id="movie_title"
+                              :id="'movie_title' + langIndex"
                               placeholder="Movie Title"
-                              v-model="movieForm.title"
-                              :disabled="lang.isMoviePosted"
+                              v-model="lang.movieForm.title"
+                              :disabled="lang.isMoviePosted && !lang.editMovie"
                             />
                             <small class="text-danger">{{ errors[0] }}</small>
                           </validation-provider>
@@ -148,10 +158,10 @@
                             rules="required|integer"
                           >
                             <b-form-input
-                              id="movie_duration"
+                              :id="'movie_duration' + langIndex"
                               placeholder="Movie Duration"
-                              v-model="movieForm.duration"
-                              :disabled="lang.isMoviePosted"
+                              v-model="lang.movieForm.duration"
+                              :disabled="lang.isMoviePosted && !lang.editMovie"
                             />
                             <small class="text-danger">{{ errors[0] }}</small>
                           </validation-provider>
@@ -168,10 +178,10 @@
                             rules="required|integer"
                           >
                             <b-form-input
-                              id="movie_after_duration"
+                              :id="'movie_after_duration' + langIndex"
                               placeholder="Movie After Duration"
-                              v-model="movieForm.after_duration"
-                              :disabled="lang.isMoviePosted"
+                              v-model="lang.movieForm.after_duration"
+                              :disabled="lang.isMoviePosted && !lang.editMovie"
                             />
                             <small class="text-danger">{{ errors[0] }}</small>
                           </validation-provider>
@@ -191,11 +201,11 @@
                           rules="required"
                         >
                           <b-form-file
-                            id="movieUpload"
-                            v-model="movieForm.movie"
+                            :id="'movieUpload' + langIndex"
+                            v-model="lang.movieForm.movie"
                             placeholder="Video"
                             accept="video/*"
-                            :disabled="lang.isMoviePosted"
+                            :disabled="lang.isMoviePosted && !lang.editMovie"
                           />
                           <small class="text-danger">{{ errors[0] }}</small>
                         </validation-provider>
@@ -204,12 +214,21 @@
                     <b-col cols="12" class="mb-2 mr-md-3">
                       <div class="w-100 mt-2 text-center">
                         <b-button
+                          v-if="!lang.editMovie"
                           variant="primary"
                           type="submit"
                           class="addPointsBtn"
                           @click.prevent="submitMovie(langIndex)"
-                          :disabled="lang.isMoviePosted"
+                          :disabled="lang.isMoviePosted && !lang.editMovie"
                           >Submit</b-button
+                        >
+                        <b-button
+                          v-else
+                          variant="primary"
+                          type="submit"
+                          class="addPointsBtn"
+                          @click.prevent="submitMovie(langIndex)"
+                          >Update</b-button
                         >
                       </div>
                     </b-col>
@@ -226,11 +245,12 @@
                   Add Question
                 </div>
               </div>
-              <validation-observer ref="quizRules" v-if="!lang.quizId">
+              <validation-observer ref="quizRules">
                 <b-form
+                  v-if="!lang.quizId"
                   novalidate
                   class="needs-validation mb-3"
-                  id="pointsForm"
+                  :id="'pointsForm' + langIndex"
                   enctype="multipart/form-data"
                 >
                   <b-form-row>
@@ -245,8 +265,8 @@
                         rules="required|integer"
                       >
                         <b-form-input
-                          id="brainPoints"
-                          v-model="quizPoints.brain_points"
+                          :id="'brainPoints' + langIndex"
+                          v-model="lang.quizPoints.brain_points"
                           :state="errors.length > 0 ? false : null"
                           placeholder="Brain Points"
                         />
@@ -260,8 +280,8 @@
                         rules="required|integer"
                       >
                         <b-form-input
-                          id="heartPoints"
-                          v-model="quizPoints.heart_points"
+                          :id="'heartPoints' + langIndex"
+                          v-model="lang.quizPoints.heart_points"
                           :state="errors.length > 0 ? false : null"
                           placeholder="Heart Points"
                         />
@@ -299,9 +319,16 @@
                         <div class="w-100 text-right mb-2" v-if="lang.quizId">
                           <div
                             class="btn btn-outline-primary mr-1"
-                            @click="toggleEditable(quizIndex, questionIndex)"
+                            @click="
+                              toggleEditable(
+                                quizIndex,
+                                questionIndex,
+                                langIndex
+                              )
+                            "
                           >
-                            <span v-if="!quiz.isEditable">Edit Question</span
+                            <span v-if="!question.isEditable"
+                              >Edit Question</span
                             ><span v-else>Disable Edit</span>
                           </div>
                           <div
@@ -315,15 +342,15 @@
                           <b-form
                             novalidate
                             class="needs-validation"
-                            id="quizEditForm"
+                            :id="'quizEditForm' + langIndex"
                             enctype="multipart/form-data"
                           >
-                            <div v-if="quiz.isEditable">
+                            <div v-if="question.isEditable">
                               <b-form-row>
                                 <!-- question type radio btns -->
                                 <div class="demo-inline-spacing mb-2">
                                   <b-form-radio
-                                    v-model="quizEditForm.pointsType"
+                                    v-model="lang.quizEditForm.pointsType"
                                     name="brain"
                                     value="brain"
                                     class="custom-control-primary"
@@ -331,7 +358,7 @@
                                     Brain Question
                                   </b-form-radio>
                                   <b-form-radio
-                                    v-model="quizEditForm.pointsType"
+                                    v-model="lang.quizEditForm.pointsType"
                                     name="heart"
                                     value="heart"
                                     class="custom-control-primary"
@@ -346,9 +373,9 @@
                                 <b-col cols="12" md="7">
                                   <b-form-group class="text-left">
                                     <b-form-input
-                                      id="edit_question_title"
+                                      :id="'edit_question_title' + langIndex"
                                       placeholder="Question Title"
-                                      v-model="quizEditForm.questionTitle"
+                                      v-model="lang.quizEditForm.questionTitle"
                                     />
                                   </b-form-group>
                                 </b-col>
@@ -360,14 +387,22 @@
                                       <b-col cols="12">
                                         <div class="inputContainer">
                                           <b-form-input
-                                            id="editAudio"
+                                            :id="'editAudio' + langIndex"
                                             placeholder="Audio File"
-                                            v-model="quizEditForm.audio.name"
+                                            v-model="
+                                              lang.quizEditForm.audio.name
+                                            "
                                             disabled
                                           />
                                           <input
-                                            id="editAudioUpload"
-                                            @change="addAudio($event, 'edit')"
+                                            :id="'editAudioUpload' + langIndex"
+                                            @change="
+                                              addAudio(
+                                                $event,
+                                                'edit',
+                                                langIndex
+                                              )
+                                            "
                                             type="file"
                                             accept="audio/*"
                                             hidden
@@ -376,7 +411,9 @@
                                             variant="primary"
                                             class="addQuestionBtn px-0"
                                             @click="
-                                              openAudioInput(`editAudioUpload`)
+                                              openAudioInput(
+                                                `editAudioUpload${langIndex}`
+                                              )
                                             "
                                           >
                                             Add audio
@@ -392,18 +429,27 @@
                                   <div class="imageInputContainer">
                                     <b-form-group class="text-left">
                                       <b-form-input
-                                        id="editQuestionImage"
+                                        :id="'editQuestionImage' + langIndex"
                                         placeholder="Image Upload"
                                         v-model="
-                                          quizEditForm.questionImage.name
+                                          lang.quizEditForm.questionImage.name
                                         "
                                         disabled
                                       />
                                     </b-form-group>
 
                                     <input
-                                      id="editQuestionImageUpload"
-                                      @change="addImage($event, 'edit')"
+                                      :id="
+                                        'editQuestionImageUpload' + langIndex
+                                      "
+                                      @change="
+                                        addImage(
+                                          $event,
+                                          'edit',
+                                          null,
+                                          langIndex
+                                        )
+                                      "
                                       type="file"
                                       accept="image/*"
                                       hidden
@@ -413,7 +459,7 @@
                                       class="addQuestionBtn px-0"
                                       @click="
                                         openImageInput(
-                                          `editQuestionImageUpload`
+                                          `editQuestionImageUpload${langIndex}`
                                         )
                                       "
                                     >
@@ -429,9 +475,8 @@
                               <!-- Add options section::begin -->
                               <b-form-row
                                 class="my-3 position-relative"
-                                v-for="(
-                                  option, optionIndex
-                                ) in quizEditForm.options"
+                                v-for="(option, optionIndex) in lang
+                                  .quizEditForm.options"
                                 :key="optionIndex"
                               >
                                 <b-col cols="1">{{ optionIndex + 1 }}.</b-col>
@@ -452,7 +497,11 @@
                                 >
                                   <div
                                     @click="
-                                      toggleCorrectOption(optionIndex, 'edit')
+                                      toggleCorrectOption(
+                                        optionIndex,
+                                        'edit',
+                                        langIndex
+                                      )
                                     "
                                     class="optionCheckbox mr-1 mr-sm-2"
                                   >
@@ -506,7 +555,8 @@
                                         addImage(
                                           $event,
                                           'editOption',
-                                          optionIndex
+                                          optionIndex,
+                                          langIndex
                                         )
                                       "
                                       type="file"
@@ -527,8 +577,10 @@
                                   </div>
                                 </b-col>
                                 <svg
-                                  v-show="quizEditForm.options.length > 0"
-                                  @click="removeOption(optionIndex, 'edit')"
+                                  v-show="lang.quizEditForm.options.length > 0"
+                                  @click="
+                                    removeOption(optionIndex, 'edit', langIndex)
+                                  "
                                   xmlns="http://www.w3.org/2000/svg"
                                   viewBox="0 0 24 24"
                                   width="24"
@@ -547,7 +599,7 @@
                                 variant="primary"
                                 class="addOptionBtn"
                                 @click="
-                                  quizEditForm.options.push({
+                                  lang.quizEditForm.options.push({
                                     title: '',
                                     image: '',
                                     imageName: '',
@@ -590,7 +642,7 @@
                                 <b-col cols="12" md="7">
                                   <b-form-group class="text-left">
                                     <b-form-input
-                                      id="edit_question_title"
+                                      :id="'edit_question_title' + langIndex"
                                       placeholder="Question Title"
                                       v-model="question.title"
                                       disabled
@@ -605,7 +657,7 @@
                                       <b-col cols="12">
                                         <div class="inputContainer">
                                           <b-form-input
-                                            id="editAudio"
+                                            :id="'editAudio' + langIndex"
                                             placeholder="Audio File"
                                             v-model="
                                               question.audio_media_id.name
@@ -613,7 +665,7 @@
                                             disabled
                                           />
                                           <input
-                                            id="editAudioUpload"
+                                            :id="'editAudioUpload' + langIndex"
                                             type="file"
                                             accept="audio/*"
                                             hidden
@@ -636,7 +688,7 @@
                                   <div class="imageInputContainer">
                                     <b-form-group class="text-left">
                                       <b-form-input
-                                        id="editQuestionImage"
+                                        :id="'editQuestionImage' + langIndex"
                                         placeholder="Image Upload"
                                         v-model="
                                           question.question_media_id.name
@@ -646,7 +698,9 @@
                                     </b-form-group>
 
                                     <input
-                                      id="editQuestionImageUpload"
+                                      :id="
+                                        'editQuestionImageUpload' + langIndex
+                                      "
                                       type="file"
                                       hidden
                                     />
@@ -751,7 +805,7 @@
                         </validation-observer>
                         <div class="w-100 text-center">
                           <b-button
-                            v-if="quiz.isEditable"
+                            v-if="question.isEditable"
                             variant="primary"
                             class="addQuestionBtn mt-2"
                             @click="submitEditedQuestion(langIndex)"
@@ -783,14 +837,14 @@
                       <b-form
                         novalidate
                         class="needs-validation"
-                        id="quizForm"
+                        :id="'quizForm' + langIndex"
                         enctype="multipart/form-data"
                       >
                         <b-form-row>
                           <!-- question type radio btns -->
                           <div class="demo-inline-spacing mb-2">
                             <b-form-radio
-                              v-model="quizForm.pointsType"
+                              v-model="lang.quizForm.pointsType"
                               name="brain"
                               value="brain"
                               class="custom-control-primary"
@@ -798,7 +852,7 @@
                               Brain Question
                             </b-form-radio>
                             <b-form-radio
-                              v-model="quizForm.pointsType"
+                              v-model="lang.quizForm.pointsType"
                               name="heart"
                               value="heart"
                               class="custom-control-primary"
@@ -811,11 +865,20 @@
                           <!-- Question titles -->
                           <b-col cols="12" md="6" lg="7">
                             <b-form-group class="text-left">
-                              <b-form-input
-                                id="question_title"
-                                placeholder="Question Title"
-                                v-model="quizForm.questionTitle"
-                              />
+                              <validation-provider
+                                #default="{ errors }"
+                                name="Question Title"
+                                rules="required"
+                              >
+                                <b-form-input
+                                  :id="'question_title' + langIndex"
+                                  placeholder="Question Title"
+                                  v-model="lang.quizForm.questionTitle"
+                                />
+                                <small class="text-danger">{{
+                                  errors[0]
+                                }}</small>
+                              </validation-provider>
                             </b-form-group>
                           </b-col>
 
@@ -825,15 +888,26 @@
                               <b-form-row>
                                 <b-col cols="12">
                                   <div class="inputContainer">
-                                    <b-form-input
-                                      id="audio"
-                                      placeholder="Audio File"
-                                      v-model="quizForm.audio.name"
-                                      disabled
-                                    />
+                                    <validation-provider
+                                      #default="{ errors }"
+                                      name="Question Audio"
+                                      rules="required"
+                                    >
+                                      <b-form-input
+                                        :id="'audio' + langIndex"
+                                        placeholder="Audio File"
+                                        v-model="lang.quizForm.audio.name"
+                                        disabled
+                                      />
+                                      <small class="text-danger">{{
+                                        errors[0]
+                                      }}</small>
+                                    </validation-provider>
                                     <input
-                                      id="audioUpload"
-                                      @change="addAudio($event)"
+                                      :id="'audioUpload' + langIndex"
+                                      @change="
+                                        addAudio($event, null, langIndex)
+                                      "
                                       type="file"
                                       accept="audio/*"
                                       hidden
@@ -841,7 +915,11 @@
                                     <b-button
                                       variant="primary"
                                       class="addQuestionBtn px-0"
-                                      @click="openAudioInput(`audioUpload`)"
+                                      @click="
+                                        openAudioInput(
+                                          `audioUpload${langIndex}`
+                                        )
+                                      "
                                     >
                                       Add audio
                                     </b-button>
@@ -855,17 +933,28 @@
                           <b-col cols="12" md="12" lg="7">
                             <div class="imageInputContainer">
                               <b-form-group class="text-left">
-                                <b-form-input
-                                  id="questionImage"
-                                  placeholder="Image Upload"
-                                  v-model="quizForm.questionImage.name"
-                                  disabled
-                                />
+                                <validation-provider
+                                  #default="{ errors }"
+                                  name="Question Image"
+                                  rules="required"
+                                >
+                                  <b-form-input
+                                    :id="'questionImage' + langIndex"
+                                    placeholder="Image Upload"
+                                    v-model="lang.quizForm.questionImage.name"
+                                    disabled
+                                  />
+                                  <small class="text-danger">{{
+                                    errors[0]
+                                  }}</small>
+                                </validation-provider>
                               </b-form-group>
 
                               <input
-                                id="questionImageUpload"
-                                @change="addImage($event)"
+                                :id="'questionImageUpload' + langIndex"
+                                @change="
+                                  addImage($event, null, null, langIndex)
+                                "
                                 type="file"
                                 accept="image/*"
                                 hidden
@@ -873,7 +962,11 @@
                               <b-button
                                 variant="primary"
                                 class="addQuestionBtn px-0"
-                                @click="openImageInput(`questionImageUpload`)"
+                                @click="
+                                  openImageInput(
+                                    `questionImageUpload${langIndex}`
+                                  )
+                                "
                               >
                                 Add Image
                               </b-button>
@@ -886,18 +979,27 @@
                         <!-- Add options section::begin -->
                         <b-form-row
                           class="my-3 position-relative"
-                          v-for="(option, optionIndex) in quizForm.options"
+                          v-for="(option, optionIndex) in lang.quizForm.options"
                           :key="optionIndex"
                         >
                           <b-col cols="1">{{ optionIndex + 1 }}.</b-col>
                           <!-- Question titles -->
                           <b-col cols="7" md="6">
                             <b-form-group class="text-left mb-0">
-                              <b-form-input
-                                :id="'option_title' + optionIndex"
-                                placeholder="Option Title"
-                                v-model="option.title"
-                              />
+                              <validation-provider
+                                #default="{ errors }"
+                                name="Option Title"
+                                rules="required"
+                              >
+                                <b-form-input
+                                  :id="'option_title' + optionIndex"
+                                  placeholder="Option Title"
+                                  v-model="option.title"
+                                />
+                                <small class="text-danger">{{
+                                  errors[0]
+                                }}</small>
+                              </validation-provider>
                             </b-form-group>
                           </b-col>
                           <b-col
@@ -906,7 +1008,13 @@
                             class="d-flex align-items-center mb-1"
                           >
                             <div
-                              @click="toggleCorrectOption(optionIndex)"
+                              @click="
+                                toggleCorrectOption(
+                                  optionIndex,
+                                  null,
+                                  langIndex
+                                )
+                              "
                               class="optionCheckbox mr-1 mr-sm-2"
                             >
                               <div
@@ -928,18 +1036,32 @@
                           <b-col cols="11" md="6">
                             <div class="imageInputContainer">
                               <b-form-group class="text-left">
-                                <b-form-input
-                                  :id="'optionImage' + optionIndex"
-                                  placeholder="Option Image Upload"
-                                  v-model="option.image.name"
-                                  disabled
-                                />
+                                <validation-provider
+                                  #default="{ errors }"
+                                  name="Option Image"
+                                  rules="required"
+                                >
+                                  <b-form-input
+                                    :id="'optionImage' + optionIndex"
+                                    placeholder="Option Image Upload"
+                                    v-model="option.image.name"
+                                    disabled
+                                  />
+                                  <small class="text-danger">{{
+                                    errors[0]
+                                  }}</small>
+                                </validation-provider>
                               </b-form-group>
 
                               <input
                                 :id="'optionImageUpload' + optionIndex"
                                 @change="
-                                  addImage($event, 'option', optionIndex)
+                                  addImage(
+                                    $event,
+                                    'option',
+                                    optionIndex,
+                                    langIndex
+                                  )
                                 "
                                 type="file"
                                 accept="image/*"
@@ -959,8 +1081,8 @@
                             </div>
                           </b-col>
                           <svg
-                            v-show="quizForm.options.length > 0"
-                            @click="removeOption(optionIndex)"
+                            v-show="lang.quizForm.options.length > 0"
+                            @click="removeOption(optionIndex, null, langIndex)"
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
                             width="24"
@@ -978,7 +1100,7 @@
                           variant="primary"
                           class="addOptionBtn"
                           @click="
-                            quizForm.options.push({
+                            lang.quizForm.options.push({
                               title: '',
                               image: '',
                               isCorrect: false,
@@ -1065,7 +1187,6 @@ export default {
       subjectId: this.$route.params.subject,
       levelId: this.$route.params.level,
       topicId: this.$route.params.topic,
-
       topicDescription: "",
       title: "",
       breadcrumbs: [
@@ -1090,6 +1211,7 @@ export default {
           active: true,
         },
       ],
+      tabIndex: 0,
       langs: [
         {
           name: "English",
@@ -1098,6 +1220,36 @@ export default {
           isQuizPosted: false,
           movieId: "",
           quizId: "",
+          editMovie: false,
+          movieForm: {
+            movie: null,
+            title: "",
+            movie_type: "brain",
+            brain_points: "",
+            heart_points: "",
+            duration: "",
+            after_duration: "",
+          },
+          quizPoints: {
+            brain_points: "",
+            heart_points: "",
+          },
+          quizForm: {
+            pointsType: "brain",
+            questionTitle: "",
+            audio: { file: null, name: "" },
+            questionImage: { image: null, name: "" },
+            options: [],
+            answer: "",
+          },
+          quizEditForm: {
+            pointsType: "brain",
+            questionTitle: "",
+            audio: { file: null, name: "" },
+            questionImage: { image: null, name: "" },
+            options: [],
+            answer: "",
+          },
         },
         {
           name: "Hindi",
@@ -1106,6 +1258,36 @@ export default {
           isQuizPosted: false,
           movieId: "",
           quizId: "",
+          editMovie: false,
+          movieForm: {
+            movie: null,
+            title: "",
+            movie_type: "brain",
+            brain_points: "",
+            heart_points: "",
+            duration: "",
+            after_duration: "",
+          },
+          quizPoints: {
+            brain_points: "",
+            heart_points: "",
+          },
+          quizForm: {
+            pointsType: "brain",
+            questionTitle: "",
+            audio: { file: null, name: "" },
+            questionImage: { image: null, name: "" },
+            options: [],
+            answer: "",
+          },
+          quizEditForm: {
+            pointsType: "brain",
+            questionTitle: "",
+            audio: { file: null, name: "" },
+            questionImage: { image: null, name: "" },
+            options: [],
+            answer: "",
+          },
         },
         {
           name: "Marathi",
@@ -1114,42 +1296,55 @@ export default {
           isQuizPosted: false,
           movieId: "",
           quizId: "",
+          editMovie: false,
+          movieForm: {
+            movie: null,
+            title: "",
+            movie_type: "brain",
+            brain_points: "",
+            heart_points: "",
+            duration: "",
+            after_duration: "",
+          },
+          quizPoints: {
+            brain_points: "",
+            heart_points: "",
+          },
+          quizForm: {
+            pointsType: "brain",
+            questionTitle: "",
+            audio: { file: null, name: "" },
+            questionImage: { image: null, name: "" },
+            options: [],
+            answer: "",
+          },
+          quizEditForm: {
+            pointsType: "brain",
+            questionTitle: "",
+            audio: { file: null, name: "" },
+            questionImage: { image: null, name: "" },
+            options: [],
+            answer: "",
+          },
         },
       ],
       locale: "En",
-      movieForm: {
-        movie: null,
-        title: "",
-        movie_type: "brain",
-        brain_points: "",
-        heart_points: "",
-        duration: "",
-        after_duration: "",
-      },
-      movieId: "",
+      // movieForm: {
+      //   movie: null,
+      //   title: "",
+      //   movie_type: "brain",
+      //   brain_points: "",
+      //   heart_points: "",
+      //   duration: "",
+      //   after_duration: "",
+      // },
+      // editMovie: false,
       documentNameKey: 0,
       optionNameKey: 0,
-      questionForm: true,
       quizData: [],
       quizPoints: {
         brain_points: "",
         heart_points: "",
-      },
-      quizForm: {
-        pointsType: "brain",
-        questionTitle: "",
-        audio: { file: null, name: "" },
-        questionImage: { image: null, name: "" },
-        options: [],
-        answer: "",
-      },
-      quizEditForm: {
-        pointsType: "brain",
-        questionTitle: "",
-        audio: { file: null, name: "" },
-        questionImage: { image: null, name: "" },
-        options: [],
-        answer: "",
       },
     };
   },
@@ -1213,15 +1408,13 @@ export default {
         })
         .then(({ data }) => {
           if (data.movie.length > 0) {
-            // self.movieData = data.movie;
-
             data.movie.forEach((item) => {
               self.langs.forEach((lang) => {
                 if (item.locale === lang.code) {
                   lang.isMoviePosted = true;
                   lang.movieId = item.id;
-                  self.movieForm = {
-                    movie: item.media,
+                  lang.movieForm = {
+                    movie: item.media ? item.media.name : null,
                     title: item.title,
                     movie_type: item.movie_type,
                     brain_points: item.brain_points,
@@ -1229,75 +1422,131 @@ export default {
                     duration: item.duration,
                     after_duration: item.after_duration,
                   };
+                  self.getQuizData(item.id);
                 }
               });
             });
-            self.getQuizData();
           }
-          // else {
-          //   self.movieData = null;
-          // }
         })
         .catch((resp) => {
           console.error(resp);
+          this.$swal({
+            title: "Error",
+            text: "Some error occurred while fetching data, try reloading the page",
+            icon: "error",
+            customClass: {
+              confirmButton: "btn btn-primary",
+            },
+            buttonsStyling: false,
+          });
         });
     },
-    getQuizData() {
+    getQuizData(movieId) {
       let self = this;
-      console.log(self.langs);
 
       axios
-        .post("/api/v1/movies/quiz", {
-          movie_id: self.langs[0].movieId,
+        .post("/admin/v1/movies/quiz", {
+          movie_id: movieId,
         })
         .then(({ data }) => {
-          console.log(data);
+          // console.log(data);
           if (data.quiz.length > 0) {
-            // self.quizData = data.quiz;
+            self.quizData = [];
             data.quiz.forEach((item) => {
-              self.quizData.push({ ...item, isEditable: false });
+              let val = item;
+              val.question.forEach((ques) => {
+                ques.isEditable = false;
+              });
+              self.quizData.push({ ...val });
 
               self.langs.forEach((lang) => {
                 if (item.locale === lang.code) {
                   lang.isQuizPosted = true;
                   lang.quizId = item.id;
-                  self.quizPoints = {
+                  console.log(lang.quizId);
+                  lang.quizPoints = {
                     brain_points: item.brain_points,
                     heart_points: item.heart_points,
                   };
                 }
               });
             });
-            console.log(self.quizData);
+            // console.log(self.quizData);
           } else {
             self.quizData = [];
           }
         })
         .catch((resp) => {
           console.error(resp);
+          this.$swal({
+            title: "Error",
+            text: "Some error occurred while fetching data, try reloading the page",
+            icon: "error",
+            customClass: {
+              confirmButton: "btn btn-primary",
+            },
+            buttonsStyling: false,
+          });
         });
+    },
+    setActiveLangTab(lang) {
+      if (lang.code !== "En") {
+        if (!lang.isMoviePosted) {
+          if (this.langs[0].isMoviePosted && this.langs[0].isQuizPosted) {
+            this.$swal({
+              title: "Do you want to inherit from english?",
+              showDenyButton: true,
+              showCancelButton: false,
+              confirmButtonText: "Yes",
+              denyButtonText: `No`,
+              customClass: {
+                confirmButton: "btn btn-primary mr-2",
+              },
+            }).then((result) => {
+              /* Read more about isConfirmed, isDenied below */
+              if (result.isConfirmed) {
+                this.locale = lang.code;
+              } else if (result.isDenied) {
+                this.tabIndex = 0;
+                this.locale = "En";
+              }
+            });
+          } else {
+            this.$swal({
+              title: "Error",
+              text: "Please upload both movie and quiz in English first",
+              icon: "error",
+              customClass: {
+                confirmButton: "btn btn-primary",
+              },
+              buttonsStyling: false,
+            }).then(() => {
+              this.tabIndex = 0;
+              this.locale = "En";
+            });
+          }
+        } else {
+          this.locale = lang.code;
+        }
+      } else {
+        this.locale = "En";
+      }
     },
     submitMovie(index) {
       this.$refs["movieRules"][index].validate().then((success) => {
         if (success) {
-          let movieData = {
-            topic_id: this.topicId,
-            locale: this.locale,
-            ...this.movieForm,
-          };
-          console.log(movieData);
-
           let movieFormData = new FormData();
           movieFormData.append("topic_id", this.topicId);
           movieFormData.append("locale", this.locale);
-          for (let i = 0; i < Object.keys(this.movieForm).length; i++) {
+          for (
+            let i = 0;
+            i < Object.keys(this.langs[index].movieForm).length;
+            i++
+          ) {
             movieFormData.append(
-              Object.keys(this.movieForm)[i],
-              Object.values(this.movieForm)[i]
+              Object.keys(this.langs[index].movieForm)[i],
+              Object.values(this.langs[index].movieForm)[i]
             );
-          }
-          for (var pair of movieFormData.entries()) {
-            console.log(pair[0] + ", " + pair[1]);
           }
 
           axios
@@ -1312,6 +1561,8 @@ export default {
                   confirmButton: "btn btn-primary",
                 },
                 buttonsStyling: false,
+              }).then(() => {
+                window.location.reload();
               });
             })
             .catch((resp) => {
@@ -1329,21 +1580,70 @@ export default {
         }
       });
     },
+    deleteMovie(lang) {
+      let self = this;
+      self
+        .$swal({
+          title: "Are you sure?",
+          text: "You won't be able to revert this!",
+          icon: "warning",
+          showCancelButton: true,
+          customClass: {
+            confirmButton: "mr-2",
+          },
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes, delete it!",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            axios
+              .get(`/admin/v1/movies/movie/delete/${lang.movieId}`)
+              .then(({ data }) => {
+                lang.isMoviePosted = false;
+                lang.movieForm = {
+                  movie: null,
+                  title: "",
+                  movie_type: "brain",
+                  brain_points: "",
+                  heart_points: "",
+                  duration: "",
+                  after_duration: "",
+                };
+                lang.movieId = null;
+                lang.editMovie = false;
+                self
+                  .$swal("Deleted!", "Question has been deleted.", "success")
+                  .then(() => {
+                    window.location.reload();
+                  });
+              })
+              .catch((resp) => {
+                console.error(resp);
+                self.$swal(
+                  "Error!",
+                  "Some error occurred. Please try again",
+                  "error"
+                );
+              });
+          }
+        });
+    },
     openAudioInput(inputId) {
       document.getElementById(inputId).click();
     },
-    addAudio(e, type = null) {
+    addAudio(e, type = null, langIndex) {
       let self = this;
       if (e.target.files && e.target.files[0]) {
         let name = e.target.files[0].name;
         var reader = new FileReader();
         reader.readAsDataURL(e.target.files[0]);
         if (type === "edit") {
-          self.quizEditForm.audio.file = e.target.files[0];
-          self.quizEditForm.audio.name = name;
+          self.langs[langIndex].quizEditForm.audio.file = e.target.files[0];
+          self.langs[langIndex].quizEditForm.audio.name = name;
         } else {
-          self.quizForm.audio.file = e.target.files[0];
-          self.quizForm.audio.name = name;
+          self.langs[langIndex].quizForm.audio.file = e.target.files[0];
+          self.langs[langIndex].quizForm.audio.name = name;
         }
         self.documentNameKey++;
       }
@@ -1351,52 +1651,55 @@ export default {
     openImageInput(inputId) {
       document.getElementById(inputId).click();
     },
-    addImage(e, type, index) {
+    addImage(e, type, index, langIndex) {
       let self = this;
       if (e.target.files && e.target.files[0]) {
         let name = e.target.files[0].name;
         var reader = new FileReader();
         reader.readAsDataURL(e.target.files[0]);
         if (type === "option") {
-          self.quizForm.options[index].image = e.target.files[0];
+          self.langs[langIndex].quizForm.options[index].image =
+            e.target.files[0];
           document.getElementById("optionImage" + index).value = name;
         } else if (type === "edit") {
-          self.quizEditForm.questionImage.image = e.target.files[0];
-          self.quizEditForm.questionImage.name = name;
+          self.langs[langIndex].quizEditForm.questionImage.image =
+            e.target.files[0];
+          self.langs[langIndex].quizEditForm.questionImage.name = name;
         } else if (type === "editOption") {
-          self.quizEditForm.options[index].image = e.target.files[0];
+          self.langs[langIndex].quizEditForm.options[index].image =
+            e.target.files[0];
           document.getElementById("editOptionImage" + index).value = name;
         } else {
-          self.quizForm.questionImage.image = e.target.files[0];
-          self.quizForm.questionImage.name = name;
+          self.langs[langIndex].quizForm.questionImage.image =
+            e.target.files[0];
+          self.langs[langIndex].quizForm.questionImage.name = name;
         }
 
-        console.log(self.quizForm);
         self.documentNameKey++;
       }
     },
-    removeOption(index, type) {
+    removeOption(index, type, langIndex) {
       if (type === "edit") {
-        this.$delete(this.quizEditForm.options, index);
-        this.quizEditForm.options.sort();
+        this.$delete(this.langs[langIndex].quizEditForm.options, index);
+        this.langs[langIndex].quizEditForm.options.sort();
       } else {
-        this.$delete(this.quizForm.options, index);
-        this.quizForm.options.sort();
+        this.$delete(this.langs[langIndex].quizForm.options, index);
+        this.langs[langIndex].quizForm.options.sort();
       }
     },
-    toggleCorrectOption(index, type) {
+    toggleCorrectOption(index, type, langIndex) {
       if (type === "edit") {
-        this.quizEditForm.options.forEach((opt) => {
+        this.langs[langIndex].quizEditForm.options.forEach((opt) => {
           opt.isCorrect = false;
         });
-        this.quizEditForm.options[index].isCorrect = true;
-        this.quizEditForm.answer = index + 1;
+        this.langs[langIndex].quizEditForm.options[index].isCorrect = true;
+        this.langs[langIndex].quizEditForm.answer = index + 1;
       } else {
-        this.quizForm.options.forEach((opt) => {
+        this.langs[langIndex].quizForm.options.forEach((opt) => {
           opt.isCorrect = false;
         });
-        this.quizForm.options[index].isCorrect = true;
-        this.quizForm.answer = index + 1;
+        this.langs[langIndex].quizForm.options[index].isCorrect = true;
+        this.langs[langIndex].quizForm.answer = index + 1;
       }
     },
     submitQuizPoints(index) {
@@ -1404,8 +1707,8 @@ export default {
         if (success) {
           var postQuizData = {
             movie_id: this.langs[index].movieId,
-            brain_points: this.quizPoints.brain_points,
-            heart_points: this.quizPoints.heart_points,
+            brain_points: this.langs[index].quizPoints.brain_points,
+            heart_points: this.langs[index].quizPoints.heart_points,
             locale: this.locale,
           };
           axios
@@ -1415,7 +1718,7 @@ export default {
               this.langs[index].quizId = data.data;
               this.$swal({
                 title: "Quiz Points Allotted!",
-                text: `Brain Points: ${this.quizPoints.brain_points} | Heart Points: ${this.quizPoints.heart_points}`,
+                text: `Brain Points: ${this.langs[index].quizPoints.brain_points} | Heart Points: ${this.langs[index].quizPoints.heart_points}`,
                 icon: "success",
                 customClass: {
                   confirmButton: "btn btn-primary",
@@ -1435,11 +1738,20 @@ export default {
           var postQuizData = new FormData();
           postQuizData.append("quiz_id", this.langs[index].quizId);
           postQuizData.append("locale", this.locale);
-          postQuizData.append("question_type", this.quizForm.pointsType);
-          postQuizData.append("title", this.quizForm.questionTitle);
-          postQuizData.append("audio", this.quizForm.audio.file);
-          postQuizData.append("image", this.quizForm.questionImage.image);
-          this.quizForm.options.forEach((opt, i) => {
+          postQuizData.append(
+            "question_type",
+            this.langs[index].quizForm.pointsType
+          );
+          postQuizData.append(
+            "title",
+            this.langs[index].quizForm.questionTitle
+          );
+          postQuizData.append("audio", this.langs[index].quizForm.audio.file);
+          postQuizData.append(
+            "image",
+            this.langs[index].quizForm.questionImage.image
+          );
+          this.langs[index].quizForm.options.forEach((opt, i) => {
             postQuizData.append(`options[${i}][title]`, opt.title);
             postQuizData.append(`options[${i}][image]`, opt.image);
             postQuizData.append(`options[${i}][check]`, opt.isCorrect ? 1 : 0);
@@ -1449,7 +1761,7 @@ export default {
             .post("/admin/v1/movies/add-question", postQuizData)
             .then(({ data }) => {
               console.log(data);
-              this.quizForm = {
+              this.langs[index].quizForm = {
                 pointsType: "brain",
                 questionTitle: "",
                 audio: { file: null, name: "" },
@@ -1457,7 +1769,7 @@ export default {
                 options: [],
                 answer: "",
               };
-              self.getQuizData();
+              this.getQuizData();
               this.$swal({
                 title: "Question Added",
                 icon: "success",
@@ -1465,15 +1777,34 @@ export default {
                   confirmButton: "btn btn-primary",
                 },
                 buttonsStyling: false,
+              }).then(() => {
+                this.langs[index].quizForm = {
+                  pointsType: "brain",
+                  questionTitle: "",
+                  audio: { file: null, name: "" },
+                  questionImage: { image: null, name: "" },
+                  options: [],
+                  answer: "",
+                };
+                this.$bvModal.hide(`modal-add-question${index}`);
               });
             })
             .catch((error) => {
               console.log(error);
+              this.$swal({
+                title: "Error",
+                text: "Some error occurred, please try again",
+                icon: "error",
+                customClass: {
+                  confirmButton: "btn btn-primary",
+                },
+                buttonsStyling: false,
+              });
             });
         }
       });
     },
-    toggleEditable(quizIndex, questionIndex) {
+    toggleEditable(quizIndex, questionIndex, langIndex) {
       let questionData = this.quizData[quizIndex].question[questionIndex];
       let options = [];
       questionData.options.forEach((opt) => {
@@ -1484,7 +1815,7 @@ export default {
           isCorrect: opt.id == questionData.answer ? true : false,
         });
       });
-      this.quizEditForm = {
+      this.langs[langIndex].quizEditForm = {
         pointsType: questionData.type,
         questionTitle: questionData.title,
         audio: { file: null, name: questionData.audio_media_id.name },
@@ -1495,11 +1826,14 @@ export default {
         options: options,
       };
 
-      let bool = this.quizData[quizIndex].isEditable;
+      let bool = this.quizData[quizIndex].question[questionIndex].isEditable;
       this.quizData.forEach((quiz) => {
-        quiz.isEditable = false;
+        quiz.question.forEach((ques) => {
+          ques.isEditable = false;
+        });
+        // quiz.isEditable = false;
       });
-      this.quizData[quizIndex].isEditable = !bool;
+      this.quizData[quizIndex].question[questionIndex].isEditable = !bool;
     },
     deleteQuestion(quizIndex, questionIndex) {
       this.$swal({

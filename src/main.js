@@ -29,7 +29,7 @@ import store from './store'
 
 
 
-axios.defaults.baseURL = "https://floto.in"
+axios.defaults.baseURL = "https://dev.floto.in"
 // axios.defaults.baseURL = "https://gappubobo.com"
 
 // axios.defaults.timeout = 3000;

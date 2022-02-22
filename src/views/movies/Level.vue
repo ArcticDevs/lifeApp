@@ -305,14 +305,7 @@ export default {
       axios
         .post("admin/v1/movies/create-topic", topicData)
         .then(({ data }) => {
-          // this.topics.push({
-          //   title: this.topicForm.topicName,
-          //   description: this.topicForm.topicDescription,
-          //   media: {
-          //     name: this.topicForm.topicImg.name,
-          //     url: document.getElementById("previewImg").src,
-          //   },
-          // });
+
           this.getTopics();
 
           console.log(data);
@@ -335,6 +328,7 @@ export default {
   border-radius: 20px;
   padding: 10px 20px;
   position: relative;
+  min-height:120px;
 
   .subName {
     color: #fff;

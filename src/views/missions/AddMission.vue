@@ -355,71 +355,36 @@ export default {
 
   methods: {
     onSubmit() {
-      var postData = {
-        mission_name: this.missionForm.missionName,
-        brain_points: this.missionForm.brainCoins,
-        heart_points: this.missionForm.heartCoins,
-        mission_type: this.missionForm.SelectedMissionType,
-      };
-      console.log(postData);
-      let self = this;
-      console.log(postData);
+      var postData = new FormData();
+      postData.append("mission_name", this.missionForm.missionName);
+      postData.append("brain_points", this.missionForm.brainCoins);
+      postData.append("heart_points", this.missionForm.heartCoins);
+      postData.append("locale", this.locale);
+      postData.append("mission_type", this.missionForm.SelectedMissionType);
+      postData.append("mission_id", this.missionId);
+      postData.append("question_title", this.missionForm.question);
+      postData.append("question_document", this.missionForm.document.file);
+      this.missionForm.images.forEach((element, i) => {
+        postData.append(`image[${i}]`, element.img);
+      });
+
       axios
         .post(`/admin/v1/missions/create`, postData)
         .then((response) => {
           console.log(response);
 
-          self.missionId = response.data.data;
-          var imageFormData = new FormData();
-          var questionFromData = new FormData();
-
-          imageFormData.append("locale", this.locale);
-          questionFromData.append("locale", this.locale);
-
-          imageFormData.append("mission_id", self.missionId);
-          questionFromData.append("mission_id", self.missionId);
-          questionFromData.append("question_title", self.missionForm.question);
-          questionFromData.append(
-            "question_document",
-            self.missionForm.document.file
-          );
-
-          self.missionForm.images.forEach((element, i) => {
-            imageFormData.append("image", element.img);
+          this.missionId = response.data.data;
+          this.$swal({
+            title: "Mission added!",
+            icon: "success",
+            customClass: {
+              confirmButton: "btn btn-primary",
+            },
+            buttonsStyling: false,
+          }).then(() => {
+            this.$router.push("/mission/list");
           });
-          for (var pair of imageFormData.entries()) {
-            console.log(pair[1]);
-          }
-
-          axios
-            .post("/admin/v1/missions/add-mission-image", imageFormData)
-            .then((response) => {
-              console.log(response);
-
-              axios
-                .post("admin/v1/missions/add-question", questionFromData)
-                .then((response) => {
-                  console.log(response);
-                  self
-                    .$swal({
-                      title: "Mission added!",
-                      icon: "success",
-                      customClass: {
-                        confirmButton: "btn btn-primary",
-                      },
-                      buttonsStyling: false,
-                    })
-                    .then(() => {
-                      self.$router.push("/mission/list");
-                    });
-                })
-                .catch((err) => {
-                  console.log(err);
-                });
-            })
-            .catch((err) => {
-              console.log(err);
-            });
+          
         })
         .catch((err) => {
           console.log(err);
@@ -466,7 +431,7 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 @import "@core/scss/vue/libs/vue-select.scss";
 .add_mission {
   #missionForm {
