@@ -42,6 +42,9 @@
       >
         Disable Edit
       </div>
+      <div class="btn btn-danger ml-2" @click="deleteMission">
+        Delete Mission
+      </div>
     </div>
     <!-- Mission Form::begin -->
     <b-card :title="cardTitle" class="add_mission">
@@ -200,6 +203,24 @@
                               d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
                             />
                           </svg>
+
+                          <!-- image removed toast::begin -->
+                          <b-toast
+                            id="image-delete-toast"
+                            variant="info"
+                            auto-hide-delay="2000"
+                            solid
+                          >
+                            <template #toast-title>
+                              <div
+                                class="d-flex flex-grow-1 align-items-baseline"
+                              >
+                                <strong class="mr-auto">Image removed</strong>
+                              </div>
+                            </template>
+                            One image was removed from mission
+                          </b-toast>
+                          <!-- image removed toast::end -->
                         </div>
 
                         <!-- Add button -->
@@ -409,6 +430,7 @@ export default {
           images.push({ img: null, name: "" });
         }
         this.mission.mission_images.forEach((item, i) => {
+          images[i].id = item.id;
           images[i].img = item.mission_media_id.url;
           images[i].name = item.mission_media_id.name;
         });
@@ -433,7 +455,7 @@ export default {
   },
   methods: {
     onSubmit() {
-     var postData = new FormData();
+      var postData = new FormData();
       postData.append("mission_name", this.missionForm.missionName);
       postData.append("brain_points", this.missionForm.brainCoins);
       postData.append("heart_points", this.missionForm.heartCoins);
@@ -467,12 +489,42 @@ export default {
       this.missionForm.images.push({});
     },
     removeImage(index) {
-      if (this.missionForm.images.length === 1) {
-        this.missionForm.images = [{}];
-      } else {
-        this.missionForm.images.splice(index, 1);
-      }
-      this.imageNameKey++;
+      this.$swal({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        customClass: {
+          confirmButton: "mr-2",
+        },
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          console.log(this.missionForm.images);
+          let imageId = this.missionForm.images[index].id;
+          axios
+            .get(`/admin/v1/missions/mission-image/delete/${imageId}`)
+            .then(({ data }) => {
+              this.$bvToast.show("image-delete-toast");
+              if (this.missionForm.images.length === 1) {
+                this.missionForm.images = [{}];
+              } else {
+                this.missionForm.images.splice(index, 1);
+              }
+              this.imageNameKey++;
+            })
+            .catch((resp) => {
+              console.error(resp);
+              this.$swal(
+                "Error!",
+                "Some error occurred. Please try again",
+                "error"
+              );
+            });
+        }
+      });
     },
     onDocumentSelected(e) {
       let self = this;
@@ -487,6 +539,38 @@ export default {
     },
     removeDocument() {
       this.missionForm.document = { file: null, name: "" };
+    },
+    deleteMission() {
+      let self = this;
+      self
+        .$swal({
+          title: "Are you sure?",
+          text: "You won't be able to revert this!",
+          icon: "warning",
+          showCancelButton: true,
+          customClass: {
+            confirmButton: "mr-2",
+          },
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes, delete it!",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            axios
+              .get(`/admin/v1/missions/delete/${self.missionId}`)
+              .then(({ data }) => {
+                self
+                  .$swal("Deleted!", "Question has been deleted.", "success")
+                  .then(() => {
+                    self.$router.push("/mission/list");
+                  });
+              })
+              .catch((resp) => {
+                console.error(resp);
+              });
+          }
+        });
     },
   },
 };

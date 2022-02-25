@@ -58,10 +58,26 @@
             </div>
 
             <img
-              :src="'https://media.gappubobo.com/'+topic.media.url"
+              :src="'https://media.gappubobo.com/' + topic.media.url"
               :alt="topic.media.name"
               class="level_card_icon"
             />
+
+            <!-- delete button -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              class="cursor-pointer removeBtn"
+              @click.prevent="removeTopic(topic.id)"
+            >
+              <path fill="none" d="M0 0h24v24H0z" />
+              <path
+                fill="#f22229"
+                d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
+              />
+            </svg>
           </b-card>
         </router-link>
       </div>
@@ -245,7 +261,7 @@ export default {
         this.breadcrumbs[1].text = data.subjects[0].name;
         data.subjects[0].levels.forEach((level) => {
           if (level.id == this.levelId) {
-            this.breadcrumbs[2].text = level.level + '';
+            this.breadcrumbs[2].text = level.level + "";
             this.levelName = level.level;
             this.levelDescription = level.description;
             this.totalRewards = level.total_rewards;
@@ -305,7 +321,6 @@ export default {
       axios
         .post("admin/v1/movies/create-topic", topicData)
         .then(({ data }) => {
-
           this.getTopics();
 
           console.log(data);
@@ -319,6 +334,43 @@ export default {
           console.log(error);
         });
     },
+    removeTopic(topicId) {
+      let self = this;
+      self
+        .$swal({
+          title: "Are you sure?",
+          text: "You won't be able to revert this!",
+          icon: "warning",
+          showCancelButton: true,
+          customClass: {
+            confirmButton: "mr-2",
+          },
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes, delete it!",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            axios
+              .get(`/admin/v1/movies/topic/delete/${topicId}`)
+              .then(({ data }) => {
+                self
+                  .$swal("Deleted!", "Topic has been deleted.", "success")
+                  .then(() => {
+                    self.getTopics();
+                  });
+              })
+              .catch((resp) => {
+                console.error(resp);
+                self.$swal(
+                  "Error!",
+                  "Some error occurred. Please try again",
+                  "error"
+                );
+              });
+          }
+        });
+    },
   },
 };
 </script>
@@ -328,7 +380,7 @@ export default {
   border-radius: 20px;
   padding: 10px 20px;
   position: relative;
-  min-height:120px;
+  min-height: 120px;
 
   .subName {
     color: #fff;
@@ -381,6 +433,12 @@ export default {
     width: 200px;
     max-width: 70%;
     object-fit: contain;
+  }
+    
+  .removeBtn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
   }
 }
 .new_level_card {

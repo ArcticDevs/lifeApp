@@ -227,7 +227,7 @@
                           variant="primary"
                           type="submit"
                           class="addPointsBtn"
-                          @click.prevent="submitMovie(langIndex)"
+                          @click.prevent="updateMovie(langIndex)"
                           >Update</b-button
                         >
                       </div>
@@ -244,10 +244,15 @@
                 >
                   Add Question
                 </div>
+                <div
+                  class="btn btn-danger addQuestionBtn ml-2"
+                  @click="deleteQuiz(lang.quizId, langIndex)"
+                >
+                  Delete Quiz
+                </div>
               </div>
               <validation-observer ref="quizRules">
                 <b-form
-                  v-if="!lang.quizId"
                   novalidate
                   class="needs-validation mb-3"
                   :id="'pointsForm' + langIndex"
@@ -269,6 +274,7 @@
                           v-model="lang.quizPoints.brain_points"
                           :state="errors.length > 0 ? false : null"
                           placeholder="Brain Points"
+                          :disabled="lang.quizId && !lang.editQuiz"
                         />
                         <small class="text-danger">{{ errors[0] }}</small>
                       </validation-provider>
@@ -284,23 +290,46 @@
                           v-model="lang.quizPoints.heart_points"
                           :state="errors.length > 0 ? false : null"
                           placeholder="Heart Points"
+                          :disabled="lang.quizId && !lang.editQuiz"
                         />
                         <small class="text-danger">{{ errors[0] }}</small>
                       </validation-provider>
                     </b-col>
                     <b-col
                       cols="12"
-                      md="3"
-                      lg="3"
-                      class="mb-2 mb-md-0 ml-md-3 text-center text-md-left"
+                      md="4"
+                      lg="6"
+                      class="mb-2 mb-md-0 pl-md-3 text-center text-md-left"
                     >
                       <b-button
+                        v-if="!lang.editQuiz"
                         variant="primary"
                         type="submit"
-                        class="addPointsBtn"
+                        class="addPointsBtn mr-2"
                         @click.prevent="submitQuizPoints(langIndex)"
-                        >Submit</b-button
+                        :disabled="lang.quizId && !lang.editQuiz"
                       >
+                        Submit
+                      </b-button>
+                      <b-button
+                        v-else
+                        variant="primary"
+                        type="submit"
+                        class="addPointsBtn mr-2"
+                        @click.prevent="updateQuizPoints(langIndex)"
+                        :disabled="lang.quizId && !lang.editQuiz"
+                      >
+                        Update
+                      </b-button>
+                      <b-button
+                        variant="outline-primary"
+                        type="submit"
+                        class="addPointsBtn"
+                        @click.prevent="lang.editQuiz = !lang.editQuiz"
+                      >
+                        <span v-if="!lang.editQuiz">Edit</span>
+                        <span v-else>Disable Edit</span>
+                      </b-button>
                     </b-col>
                   </b-form-row>
                 </b-form>
@@ -308,9 +337,12 @@
 
               <!-- Display Quiz::start -->
 
-              <div class="row mx-0" v-if="quizData.length > 0">
+              <div class="row mx-0" v-if="lang.quizData.length > 0">
                 <div class="w-100 text-right">
-                  <div v-for="(quiz, quizIndex) in quizData" :key="quizIndex">
+                  <div
+                    v-for="(quiz, quizIndex) in lang.quizData"
+                    :key="quizIndex"
+                  >
                     <div v-if="quiz.locale === locale">
                       <b-card
                         v-for="(question, questionIndex) in quiz.question"
@@ -333,7 +365,13 @@
                           </div>
                           <div
                             class="btn btn-outline-danger"
-                            @click="deleteQuestion(quizIndex, questionIndex)"
+                            @click="
+                              deleteQuestion(
+                                question.id,
+                                lang.movieId,
+                                langIndex
+                              )
+                            "
                           >
                             Delete Question
                           </div>
@@ -808,7 +846,7 @@
                             v-if="question.isEditable"
                             variant="primary"
                             class="addQuestionBtn mt-2"
-                            @click="submitEditedQuestion(langIndex)"
+                            @click="updateQuestion(langIndex)"
                           >
                             Update
                           </b-button>
@@ -1118,7 +1156,7 @@
                     <b-button
                       variant="primary"
                       class="addQuestionBtn mt-2"
-                      @click="submitQuestion(langIndex)"
+                      @click.prevent="submitQuestion(langIndex)"
                     >
                       Submit
                     </b-button>
@@ -1230,6 +1268,8 @@ export default {
             duration: "",
             after_duration: "",
           },
+          quizData: [],
+          editQuiz: false,
           quizPoints: {
             brain_points: "",
             heart_points: "",
@@ -1268,6 +1308,9 @@ export default {
             duration: "",
             after_duration: "",
           },
+          quizData: [],
+          editQuiz: false,
+
           quizPoints: {
             brain_points: "",
             heart_points: "",
@@ -1306,6 +1349,9 @@ export default {
             duration: "",
             after_duration: "",
           },
+          quizData: [],
+          editQuiz: false,
+
           quizPoints: {
             brain_points: "",
             heart_points: "",
@@ -1329,19 +1375,8 @@ export default {
         },
       ],
       locale: "En",
-      // movieForm: {
-      //   movie: null,
-      //   title: "",
-      //   movie_type: "brain",
-      //   brain_points: "",
-      //   heart_points: "",
-      //   duration: "",
-      //   after_duration: "",
-      // },
-      // editMovie: false,
       documentNameKey: 0,
       optionNameKey: 0,
-      quizData: [],
       quizPoints: {
         brain_points: "",
         heart_points: "",
@@ -1409,12 +1444,13 @@ export default {
         .then(({ data }) => {
           if (data.movie.length > 0) {
             data.movie.forEach((item) => {
-              self.langs.forEach((lang) => {
+              self.langs.forEach((lang, i) => {
                 if (item.locale === lang.code) {
                   lang.isMoviePosted = true;
                   lang.movieId = item.id;
                   lang.movieForm = {
-                    movie: item.media ? item.media.name : null,
+                    // movie: item.media ? item.media.name : null,
+                    movie: null,
                     title: item.title,
                     movie_type: item.movie_type,
                     brain_points: item.brain_points,
@@ -1422,7 +1458,7 @@ export default {
                     duration: item.duration,
                     after_duration: item.after_duration,
                   };
-                  self.getQuizData(item.id);
+                  self.getQuizData(item.id, i);
                 }
               });
             });
@@ -1441,7 +1477,7 @@ export default {
           });
         });
     },
-    getQuizData(movieId) {
+    getQuizData(movieId, index) {
       let self = this;
 
       axios
@@ -1451,19 +1487,18 @@ export default {
         .then(({ data }) => {
           // console.log(data);
           if (data.quiz.length > 0) {
-            self.quizData = [];
+            self.langs[index].quizData = [];
             data.quiz.forEach((item) => {
               let val = item;
               val.question.forEach((ques) => {
                 ques.isEditable = false;
               });
-              self.quizData.push({ ...val });
+              self.langs[index].quizData.push({ ...val });
 
               self.langs.forEach((lang) => {
                 if (item.locale === lang.code) {
                   lang.isQuizPosted = true;
                   lang.quizId = item.id;
-                  console.log(lang.quizId);
                   lang.quizPoints = {
                     brain_points: item.brain_points,
                     heart_points: item.heart_points,
@@ -1473,7 +1508,7 @@ export default {
             });
             // console.log(self.quizData);
           } else {
-            self.quizData = [];
+            self.langs[index].quizData = [];
           }
         })
         .catch((resp) => {
@@ -1556,6 +1591,54 @@ export default {
               this.movieId = data.data;
               this.$swal({
                 title: "Movie Data Uploaded!",
+                icon: "success",
+                customClass: {
+                  confirmButton: "btn btn-primary",
+                },
+                buttonsStyling: false,
+              }).then(() => {
+                window.location.reload();
+              });
+            })
+            .catch((resp) => {
+              console.error(resp);
+              this.$swal({
+                title: "Error!",
+                text: "Some error occurred while uploading movie data",
+                icon: "error",
+                customClass: {
+                  confirmButton: "btn btn-primary",
+                },
+                buttonsStyling: false,
+              });
+            });
+        }
+      });
+    },
+    updateMovie(index) {
+      this.$refs["movieRules"][index].validate().then((success) => {
+        if (success) {
+          let movieFormData = new FormData();
+          movieFormData.append("movie_id", this.langs[index].movieId);
+          movieFormData.append("locale", this.locale);
+          for (
+            let i = 0;
+            i < Object.keys(this.langs[index].movieForm).length;
+            i++
+          ) {
+            movieFormData.append(
+              Object.keys(this.langs[index].movieForm)[i],
+              Object.values(this.langs[index].movieForm)[i]
+            );
+          }
+
+          axios
+            .post("/admin/v1/movies/update-movie?_method=PUT", movieFormData)
+            .then(({ data }) => {
+              console.log(data);
+              this.movieId = data.data;
+              this.$swal({
+                title: "Movie Data Updated!",
                 icon: "success",
                 customClass: {
                   confirmButton: "btn btn-primary",
@@ -1728,6 +1811,51 @@ export default {
             })
             .catch((error) => {
               console.log(error);
+              this.$swal({
+                title: "Quiz Points Allotment Failed!",
+                text: `Please try again`,
+                icon: "error",
+                customClass: {
+                  confirmButton: "btn btn-primary",
+                },
+                buttonsStyling: false,
+              });
+            });
+        }
+      });
+    },
+    updateQuizPoints(index) {
+      this.$refs["quizRules"][index].validate().then((success) => {
+        if (success) {
+          let updateData = {
+            quiz_id: this.langs[index].quizId,
+            brain_points: this.langs[index].quizPoints.brain_points,
+            heart_points: this.langs[index].quizPoints.heart_points,
+          };
+          axios
+            .post(`/admin/v1/movies/update-quiz?_method=PUT`, updateData)
+            .then(({ data }) => {
+              this.$swal({
+                title: "Quiz Points Updated!",
+                icon: "success",
+                customClass: {
+                  confirmButton: "btn btn-primary",
+                },
+                buttonsStyling: false,
+              });
+              this.langs[index].editQuiz = false;
+            })
+            .catch((resp) => {
+              console.error(resp);
+              this.$swal({
+                title: "Quiz Points Updation Failed!",
+                text: `Please try again`,
+                icon: "error",
+                customClass: {
+                  confirmButton: "btn btn-primary",
+                },
+                buttonsStyling: false,
+              });
             });
         }
       });
@@ -1760,16 +1888,7 @@ export default {
           axios
             .post("/admin/v1/movies/add-question", postQuizData)
             .then(({ data }) => {
-              console.log(data);
-              this.langs[index].quizForm = {
-                pointsType: "brain",
-                questionTitle: "",
-                audio: { file: null, name: "" },
-                questionImage: { image: null, name: "" },
-                options: [],
-                answer: "",
-              };
-              this.getQuizData();
+              this.getQuizData(this.langs[index].movieId, index);
               this.$swal({
                 title: "Question Added",
                 icon: "success",
@@ -1805,7 +1924,8 @@ export default {
       });
     },
     toggleEditable(quizIndex, questionIndex, langIndex) {
-      let questionData = this.quizData[quizIndex].question[questionIndex];
+      let questionData =
+        this.langs[langIndex].quizData[quizIndex].question[questionIndex];
       let options = [];
       questionData.options.forEach((opt) => {
         options.push({
@@ -1826,16 +1946,20 @@ export default {
         options: options,
       };
 
-      let bool = this.quizData[quizIndex].question[questionIndex].isEditable;
-      this.quizData.forEach((quiz) => {
+      let bool =
+        this.langs[langIndex].quizData[quizIndex].question[questionIndex]
+          .isEditable;
+      this.langs[langIndex].quizData.forEach((quiz) => {
         quiz.question.forEach((ques) => {
           ques.isEditable = false;
         });
         // quiz.isEditable = false;
       });
-      this.quizData[quizIndex].question[questionIndex].isEditable = !bool;
+      this.langs[langIndex].quizData[quizIndex].question[
+        questionIndex
+      ].isEditable = !bool;
     },
-    deleteQuestion(quizIndex, questionIndex) {
+    deleteQuestion(questionId, movieId, langIndex) {
       this.$swal({
         title: "Are you sure?",
         text: "You won't be able to revert this!",
@@ -1849,14 +1973,71 @@ export default {
         confirmButtonText: "Yes, delete it!",
       }).then((result) => {
         if (result.isConfirmed) {
-          this.$delete(this.quizData[quizIndex].question, questionIndex);
-          this.quizData[quizIndex].question.sort();
-
-          this.$swal("Deleted!", "Question has been deleted.", "success");
+          axios
+            .get(`/admin/v1/movies/question/delete/${questionId}`)
+            .then(({ data }) => {
+              self
+                .$swal("Deleted!", "Quiz has been deleted.", "success")
+                .then(() => {
+                  self.getQuizData(movieId, langIndex);
+                });
+            })
+            .catch((resp) => {
+              console.error(resp);
+              self.$swal(
+                "Error!",
+                "Some error occurred. Please try again",
+                "error"
+              );
+            });
         }
       });
     },
-    submitEditedQuestion(index) {
+    deleteQuiz(quizId, langIndex) {
+      let self = this;
+      self
+        .$swal({
+          title: "Are you sure?",
+          text: "You won't be able to revert this!",
+          icon: "warning",
+          showCancelButton: true,
+          customClass: {
+            confirmButton: "mr-2",
+          },
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes, delete it!",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            axios
+              .get(`/admin/v1/movies/quiz/delete/${quizId}`)
+              .then(({ data }) => {
+                self
+                  .$swal("Deleted!", "Quiz has been deleted.", "success")
+                  .then(() => {
+                    self.langs[langIndex].quizData = [];
+
+                    self.langs[langIndex].isQuizPosted = false;
+                    self.langs[langIndex].quizId = "";
+                    self.langs[langIndex].quizPoints = {
+                      brain_points: "",
+                      heart_points: "",
+                    };
+                  });
+              })
+              .catch((resp) => {
+                console.error(resp);
+                self.$swal(
+                  "Error!",
+                  "Some error occurred. Please try again",
+                  "error"
+                );
+              });
+          }
+        });
+    },
+    updateQuestion(index) {
       alert("edit form submitted");
     },
   },

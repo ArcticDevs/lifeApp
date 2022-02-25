@@ -36,6 +36,21 @@
               />
             </div>
           </div>
+          <!-- delete button -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+            class="cursor-pointer removeBtn"
+            @click.prevent="removeLevel(level.id)"
+          >
+            <path fill="none" d="M0 0h24v24H0z" />
+            <path
+              fill="#f22229"
+              d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
+            />
+          </svg>
         </b-card>
       </div>
       <div class="col-12 col-md-6 col-xl-4 mb-3">
@@ -231,6 +246,43 @@ export default {
           console.log(error);
         });
     },
+    removeLevel(levelId) {
+      let self = this;
+      self
+        .$swal({
+          title: "Are you sure?",
+          text: "You won't be able to revert this!",
+          icon: "warning",
+          showCancelButton: true,
+          customClass: {
+            confirmButton: "mr-2",
+          },
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes, delete it!",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            axios
+              .get(`/admin/v1/movies/level/delete/${levelId}`)
+              .then(({ data }) => {
+                self
+                  .$swal("Deleted!", "Level has been deleted.", "success")
+                  .then(() => {
+                    self.getSubject();
+                  });
+              })
+              .catch((resp) => {
+                console.error(resp);
+                self.$swal(
+                  "Error!",
+                  "Some error occurred. Please try again",
+                  "error"
+                );
+              });
+          }
+        });
+    },
   },
 };
 </script>
@@ -297,6 +349,13 @@ export default {
     max-width: 200px;
     object-fit: contain;
   }
+
+  
+  .removeBtn {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+  }
 }
 .new_level_card {
   border-radius: 20px;
@@ -313,6 +372,7 @@ export default {
     color: #ff9501;
     font-weight: bold;
   }
+
 }
 
 .addBtn {

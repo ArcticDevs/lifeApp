@@ -9,6 +9,8 @@ import '@/libs/vue-select'
 import '@/libs/tour'
 import '@/@fake-db/db'
 import '@/@fake-db/db'
+import '@fortawesome/fontawesome-free/css/all.css'
+import '@fortawesome/fontawesome-free/js/all.js'
 
 import { ModalPlugin, ToastPlugin } from 'bootstrap-vue'
 
@@ -24,6 +26,7 @@ import store from './store'
 
 
 // 3rd party plugins
+
 
 
 
