@@ -846,7 +846,13 @@
                             v-if="question.isEditable"
                             variant="primary"
                             class="addQuestionBtn mt-2"
-                            @click="updateQuestion(langIndex)"
+                            @click="
+                              updateQuestion(
+                                langIndex,
+                                quizIndex,
+                                questionIndex
+                              )
+                            "
                           >
                             Update
                           </b-button>
@@ -1284,11 +1290,14 @@ export default {
           },
           quizEditForm: {
             pointsType: "brain",
+            questionId: "",
             questionTitle: "",
             audio: { file: null, name: "" },
             questionImage: { image: null, name: "" },
             options: [],
             answer: "",
+            isQuestionImageUpdated: false,
+            isQuestionAudioUpdated: false,
           },
         },
         {
@@ -1325,11 +1334,14 @@ export default {
           },
           quizEditForm: {
             pointsType: "brain",
+            questionId: "",
             questionTitle: "",
             audio: { file: null, name: "" },
             questionImage: { image: null, name: "" },
             options: [],
             answer: "",
+            isQuestionImageUpdated: false,
+            isQuestionAudioUpdated: false,
           },
         },
         {
@@ -1366,11 +1378,14 @@ export default {
           },
           quizEditForm: {
             pointsType: "brain",
+            questionId: "",
             questionTitle: "",
             audio: { file: null, name: "" },
             questionImage: { image: null, name: "" },
             options: [],
             answer: "",
+            isQuestionImageUpdated: false,
+            isQuestionAudioUpdated: false,
           },
         },
       ],
@@ -1724,6 +1739,7 @@ export default {
         if (type === "edit") {
           self.langs[langIndex].quizEditForm.audio.file = e.target.files[0];
           self.langs[langIndex].quizEditForm.audio.name = name;
+          self.langs[langIndex].quizEditForm.isQuestionAudioUpdated = true;
         } else {
           self.langs[langIndex].quizForm.audio.file = e.target.files[0];
           self.langs[langIndex].quizForm.audio.name = name;
@@ -1748,14 +1764,19 @@ export default {
           self.langs[langIndex].quizEditForm.questionImage.image =
             e.target.files[0];
           self.langs[langIndex].quizEditForm.questionImage.name = name;
+          self.langs[langIndex].quizEditForm.isQuestionImageUpdated = true;
         } else if (type === "editOption") {
           self.langs[langIndex].quizEditForm.options[index].image =
             e.target.files[0];
           document.getElementById("editOptionImage" + index).value = name;
+          self.langs[langIndex].quizEditForm.options[index].isImageUpdated = true;
         } else {
           self.langs[langIndex].quizForm.questionImage.image =
             e.target.files[0];
           self.langs[langIndex].quizForm.questionImage.name = name;
+          self.langs[langIndex].quizEditForm.options[
+            index
+          ].isImageUpdated = true;
         }
 
         self.documentNameKey++;
@@ -1862,64 +1883,61 @@ export default {
     },
     submitQuestion(index) {
       // this.$refs["quizQuestionRules"][index].validate().then((success) => {
-        // if (success) {
-          var postQuizData = new FormData();
-          postQuizData.append("quiz_id", this.langs[index].quizId);
-          postQuizData.append("locale", this.locale);
-          postQuizData.append(
-            "question_type",
-            this.langs[index].quizForm.pointsType
-          );
-          postQuizData.append(
-            "title",
-            this.langs[index].quizForm.questionTitle
-          );
-          postQuizData.append("audio", this.langs[index].quizForm.audio.file);
-          postQuizData.append(
-            "image",
-            this.langs[index].quizForm.questionImage.image
-          );
-          this.langs[index].quizForm.options.forEach((opt, i) => {
-            postQuizData.append(`options[${i}][title]`, opt.title);
-            postQuizData.append(`options[${i}][image]`, opt.image);
-            postQuizData.append(`options[${i}][check]`, opt.isCorrect ? 1 : 0);
-          });
+      // if (success) {
+      var postQuizData = new FormData();
+      postQuizData.append("quiz_id", this.langs[index].quizId);
+      postQuizData.append("locale", this.locale);
+      postQuizData.append(
+        "question_type",
+        this.langs[index].quizForm.pointsType
+      );
+      postQuizData.append("title", this.langs[index].quizForm.questionTitle);
+      postQuizData.append("audio", this.langs[index].quizForm.audio.file);
+      postQuizData.append(
+        "image",
+        this.langs[index].quizForm.questionImage.image
+      );
+      this.langs[index].quizForm.options.forEach((opt, i) => {
+        postQuizData.append(`options[${i}][title]`, opt.title);
+        postQuizData.append(`options[${i}][image]`, opt.image);
+        postQuizData.append(`options[${i}][check]`, opt.isCorrect ? 1 : 0);
+      });
 
-          axios
-            .post("/admin/v1/movies/add-question", postQuizData)
-            .then(({ data }) => {
-              this.getQuizData(this.langs[index].movieId, index);
-              this.$swal({
-                title: "Question Added",
-                icon: "success",
-                customClass: {
-                  confirmButton: "btn btn-primary",
-                },
-                buttonsStyling: false,
-              }).then(() => {
-                this.langs[index].quizForm = {
-                  pointsType: "brain",
-                  questionTitle: "",
-                  audio: { file: null, name: "" },
-                  questionImage: { image: null, name: "" },
-                  options: [],
-                  answer: "",
-                };
-                this.$bvModal.hide(`modal-add-question${index}`);
-              });
-            })
-            .catch((error) => {
-              console.log(error);
-              this.$swal({
-                title: "Error",
-                text: "Some error occurred, please try again",
-                icon: "error",
-                customClass: {
-                  confirmButton: "btn btn-primary",
-                },
-                buttonsStyling: false,
-              });
-            });
+      axios
+        .post("/admin/v1/movies/add-question", postQuizData)
+        .then(({ data }) => {
+          this.getQuizData(this.langs[index].movieId, index);
+          this.$swal({
+            title: "Question Added",
+            icon: "success",
+            customClass: {
+              confirmButton: "btn btn-primary",
+            },
+            buttonsStyling: false,
+          }).then(() => {
+            this.langs[index].quizForm = {
+              pointsType: "brain",
+              questionTitle: "",
+              audio: { file: null, name: "" },
+              questionImage: { image: null, name: "" },
+              options: [],
+              answer: "",
+            };
+            this.$bvModal.hide(`modal-add-question${index}`);
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          this.$swal({
+            title: "Error",
+            text: "Some error occurred, please try again",
+            icon: "error",
+            customClass: {
+              confirmButton: "btn btn-primary",
+            },
+            buttonsStyling: false,
+          });
+        });
       //   }
       // });
     },
@@ -1929,14 +1947,17 @@ export default {
       let options = [];
       questionData.options.forEach((opt) => {
         options.push({
+          id: opt.id,
           title: opt.option_title,
           image: null,
           imageName: opt.media.name,
           isCorrect: opt.id == questionData.answer ? true : false,
+          isImageUpdated: false,
         });
       });
       this.langs[langIndex].quizEditForm = {
         pointsType: questionData.type,
+        questionId: questionData.id,
         questionTitle: questionData.title,
         audio: { file: null, name: questionData.audio_media_id.name },
         questionImage: {
@@ -1953,7 +1974,6 @@ export default {
         quiz.question.forEach((ques) => {
           ques.isEditable = false;
         });
-        // quiz.isEditable = false;
       });
       this.langs[langIndex].quizData[quizIndex].question[
         questionIndex
@@ -2037,8 +2057,87 @@ export default {
           }
         });
     },
-    updateQuestion(index) {
-      alert("edit form submitted");
+    updateQuestion(index, quizIndex, questionIndex) {
+      this.$refs["quizEditQuestionRules"][index].validate().then((success) => {
+        if (success) {
+          var postQuizData = new FormData();
+          postQuizData.append(
+            "question_id",
+            this.langs[index].quizEditForm.questionId
+          );
+          postQuizData.append(
+            "question_type",
+            this.langs[index].quizEditForm.pointsType
+          );
+          postQuizData.append(
+            "title",
+            this.langs[index].quizEditForm.questionTitle
+          );
+          postQuizData.append("locale", this.locale);
+          if (this.langs[index].quizEditForm.isQuestionAudioUpdated) {
+            postQuizData.append(
+              "audio",
+              this.langs[index].quizEditForm.audio.file
+            );
+          }
+          if (this.langs[index].quizEditForm.isQuestionImageUpdated) {
+            postQuizData.append(
+              "image",
+              this.langs[index].quizEditForm.questionImage.image
+            );
+          }
+          this.langs[index].quizEditForm.options.forEach((opt, i) => {
+            if (opt.id && opt.id !== "") {
+              postQuizData.append(`options[${i}][id]`, opt.id);
+            }
+            postQuizData.append(`options[${i}][title]`, opt.title);
+            if (opt.isImageUpdated) {
+              postQuizData.append(`options[${i}][image]`, opt.image);
+            }
+            postQuizData.append(`options[${i}][check]`, opt.isCorrect ? 1 : 0);
+          });
+
+          axios
+            .post("/movies/update-question?_method=PUT", postQuizData)
+            .then(({ data }) => {
+              this.getQuizData(this.langs[index].movieId, index);
+              this.$swal({
+                title: "Question Updated",
+                icon: "success",
+                customClass: {
+                  confirmButton: "btn btn-primary",
+                },
+                buttonsStyling: false,
+              }).then(() => {
+                this.langs[index].quizEditForm = {
+                  pointsType: "brain",
+                  questionId: "",
+                  questionTitle: "",
+                  audio: { file: null, name: "" },
+                  questionImage: { image: null, name: "" },
+                  options: [],
+                  answer: "",
+                  isQuestionImageUpdated: false,
+                  isQuestionAudioUpdated: false,
+                };
+                this.getQuizData(this.langs[index].movieId, index);
+                this.toggleEditable(quizIndex, questionIndex, index);
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+              this.$swal({
+                title: "Error",
+                text: "Some error occurred, please try again",
+                icon: "error",
+                customClass: {
+                  confirmButton: "btn btn-primary",
+                },
+                buttonsStyling: false,
+              });
+            });
+        }
+      });
     },
   },
 };
