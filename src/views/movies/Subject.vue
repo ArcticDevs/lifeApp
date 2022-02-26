@@ -18,7 +18,29 @@
         :key="levelIndex"
       >
         <b-card class="level_card bg_orange">
-          <div class="row h-100">
+          <div class="actionBtns pl-1">
+            <!-- edit button -->
+            <span @click="setEditLevel(level)"
+              ><i class="fas fa-edit editBtn cursor-pointer"></i>
+            </span>
+
+            <!-- delete button -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              class="cursor-pointer removeBtn ml-1"
+              @click.prevent="removeLevel(level.id)"
+            >
+              <path fill="none" d="M0 0h24v24H0z" />
+              <path
+                fill="#f22229"
+                d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
+              />
+            </svg>
+          </div>
+          <div class="row h-100 mt-1">
             <div class="level_card_content col-8 col-md-6 col-lg-8 pr-0">
               <h2>{{ level.level }}</h2>
               <p>
@@ -36,21 +58,6 @@
               />
             </div>
           </div>
-          <!-- delete button -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="24"
-            height="24"
-            class="cursor-pointer removeBtn"
-            @click.prevent="removeLevel(level.id)"
-          >
-            <path fill="none" d="M0 0h24v24H0z" />
-            <path
-              fill="#f22229"
-              d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
-            />
-          </svg>
         </b-card>
       </div>
       <div class="col-12 col-md-6 col-xl-4 mb-3">
@@ -79,7 +86,7 @@
           centered
           hide-footer
           size="lg"
-          title="Add level"
+          :title="editLevel ? 'Edit Level' : 'Add Level'"
         >
           <div class="h-100 w-100 p-3">
             <!-- level name -->
@@ -118,10 +125,18 @@
             <!-- add button -->
             <div class="text-center w-100 mt-3">
               <b-button
+                v-if="!editLevel"
                 variant="primary"
                 class="addBtn"
                 @click.prevent="addLevel()"
                 >Add</b-button
+              >
+              <b-button
+                v-else
+                variant="primary"
+                class="addBtn"
+                @click.prevent="updateLevel()"
+                >Update</b-button
               >
             </div>
           </div>
@@ -196,6 +211,8 @@ export default {
       levels: [],
       subjectName: "",
       componentKey: 0,
+      editLevel: false,
+      editLevelId: "",
     };
   },
   created() {
@@ -244,6 +261,52 @@ export default {
         })
         .catch((error) => {
           console.log(error);
+        });
+    },
+    setEditLevel(level) {
+      this.levelName = level.level;
+      this.levelDescription = level.description;
+      this.totalRewards = level.total_rewards;
+      this.totalTopic = level.total_question;
+      this.editLevel = true;
+      this.editLevelId = level.id;
+      this.$bvModal.show("add-level-modal");
+    },
+    updateLevel() {
+      let updateData = {
+        level: this.levelName,
+        description: this.levelDescription,
+        total_rewards: this.totalRewards,
+        total_question: this.totalTopic,
+        level_id: this.editLevelId,
+      };
+      axios
+        .post(`/admin/v1/movies/update-level?_method=PUT`, updateData)
+        .then(({ data }) => {
+          this.$bvModal.hide("add-level-modal");
+          this.editLevel = false;
+          this.editLevelId = "";
+          this.levelName = "";
+          this.levelDescription = "";
+          this.totalRewards = "";
+          this.totalTopic = "";
+          this.getSubject();
+        })
+        .catch((resp) => {
+          console.error(resp);
+          this.$swal(
+            "Error!",
+            "Some error occurred. Please try again",
+            "error"
+          ).then(() => {
+            this.$bvModal.hide("add-level-modal");
+            this.editLevel = false;
+            this.editLevelId = "";
+            this.levelName = "";
+            this.levelDescription = "";
+            this.totalRewards = "";
+            this.totalTopic = "";
+          });
         });
     },
     removeLevel(levelId) {
@@ -344,17 +407,22 @@ export default {
     position: absolute;
     right: -35px;
     top: -85px;
-    height: 380px;
-    max-height: 140%;
+    height: 230px;
     max-width: 200px;
     object-fit: contain;
   }
 
-  
-  .removeBtn {
+  .actionBtns {
     position: absolute;
     top: 5px;
-    left: 5px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+  }
+
+  .editBtn {
+    font-size: 19px;
+    color: #ee2d2d;
   }
 }
 .new_level_card {
@@ -372,7 +440,6 @@ export default {
     color: #ff9501;
     font-weight: bold;
   }
-
 }
 
 .addBtn {

@@ -1861,8 +1861,8 @@ export default {
       });
     },
     submitQuestion(index) {
-      this.$refs["quizQuestionRules"][index].validate().then((success) => {
-        if (success) {
+      // this.$refs["quizQuestionRules"][index].validate().then((success) => {
+        // if (success) {
           var postQuizData = new FormData();
           postQuizData.append("quiz_id", this.langs[index].quizId);
           postQuizData.append("locale", this.locale);
@@ -1920,8 +1920,8 @@ export default {
                 buttonsStyling: false,
               });
             });
-        }
-      });
+      //   }
+      // });
     },
     toggleEditable(quizIndex, questionIndex, langIndex) {
       let questionData =

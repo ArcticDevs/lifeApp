@@ -46,9 +46,31 @@
         v-for="(topic, topicIndex) in topics"
         :key="topicIndex"
       >
-        <router-link :to="$route.path + '/' + topic.id">
-          <b-card class="level_card">
-            <div class="level_card_content pr-0">
+        <b-card class="level_card">
+          <div class="actionBtns">
+            <!-- edit button -->
+            <span @click="setEditTopic(topic)"
+              ><i class="fas fa-edit editBtn cursor-pointer"></i>
+            </span>
+
+            <!-- delete button -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              class="cursor-pointer removeBtn ml-1"
+              @click.prevent="removeTopic(topic.id)"
+            >
+              <path fill="none" d="M0 0h24v24H0z" />
+              <path
+                fill="#f22229"
+                d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
+              />
+            </svg>
+          </div>
+          <router-link :to="$route.path + '/' + topic.id">
+            <div class="level_card_content pr-0 mt-1">
               <h2>{{ topic.title }}</h2>
               <div class="descriptionContainer">
                 <p>
@@ -62,24 +84,8 @@
               :alt="topic.media.name"
               class="level_card_icon"
             />
-
-            <!-- delete button -->
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="24"
-              height="24"
-              class="cursor-pointer removeBtn"
-              @click.prevent="removeTopic(topic.id)"
-            >
-              <path fill="none" d="M0 0h24v24H0z" />
-              <path
-                fill="#f22229"
-                d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
-              />
-            </svg>
-          </b-card>
-        </router-link>
+          </router-link>
+        </b-card>
       </div>
       <div class="col-12 col-md-4 col-xl-3 mb-3">
         <b-card class="new_level_card" v-b-modal.add-topic-modal>
@@ -171,10 +177,18 @@
             <!-- add button -->
             <div class="text-center w-100 mt-3">
               <b-button
+                v-if="!editTopic"
                 variant="primary"
                 class="addBtn"
                 @click.prevent="addTopic"
                 >Add</b-button
+              >
+              <b-button
+                v-else
+                variant="primary"
+                class="addBtn"
+                @click.prevent="updateTopic"
+                >Update</b-button
               >
             </div>
           </div>
@@ -250,6 +264,9 @@ export default {
       },
       topics: [],
       imageNameKey: 0,
+      editTopic: false,
+      editTopicId: "",
+      isImageUpdated: false,
     };
   },
   created() {
@@ -297,6 +314,9 @@ export default {
           document.getElementById("previewImg").src = reader.result;
           document.getElementById("previewImg").style.display = "block";
           self.topicForm.topicImg.img = e.target.files[0];
+          if (self.editTopic) {
+            self.isImageUpdated = true;
+          }
         };
         reader.readAsDataURL(e.target.files[0]);
         // self.topicForm.topicImg.img = e.target.files[0];
@@ -332,6 +352,63 @@ export default {
         })
         .catch((error) => {
           console.log(error);
+          this.$swal(
+            "Error!",
+            "Some error occurred. Please try again",
+            "error"
+          );
+        });
+    },
+    setEditTopic(topic) {
+      this.isImageUpdated = false;
+
+      this.$bvModal.show("add-topic-modal");
+      this.topicForm.topicName = topic.title;
+      this.topicForm.topicDescription = topic.description;
+      // this.topicForm.topicImg.name = name;
+
+      this.editTopic = true;
+      this.editTopicId = topic.id;
+      document.getElementById(
+        "previewImg"
+      ).src = `https://media.gappubobo.com/${topic.image}`;
+    },
+    updateTopic() {
+      let updateData = new FormData();
+      if (this.isImageUpdated) {
+        updateData.append("title", this.topicForm.topicName);
+        updateData.append("description", this.topicForm.topicDescription);
+        updateData.append("image", this.topicForm.topicImg.img);
+        updateData.append("topic_id", this.editTopicId);
+      } else {
+        updateData.append("title", this.topicForm.topicName);
+        updateData.append("description", this.topicForm.topicDescription);
+        updateData.append("topic_id", this.editTopicId);
+      }
+
+      axios
+        .post(`/admin/v1/movies/update-topic?_method=PUT`, updateData)
+        .then(({ data }) => {
+          this.$bvModal.hide("add-topic-modal");
+          this.editTopic = false;
+          this.editTopicId = "";
+          this.topicForm.topicName = "";
+          this.topicForm.topicDescription = "";
+          this.getTopics();
+        })
+        .catch((resp) => {
+          console.error(resp);
+          this.$swal(
+            "Error!",
+            "Some error occurred. Please try again",
+            "error"
+          ).then(() => {
+            this.$bvModal.hide("add-topic-modal");
+            this.editTopic = false;
+            this.editTopicId = "";
+            this.topicForm.topicName = "";
+            this.topicForm.topicDescription = "";
+          });
         });
     },
     removeTopic(topicId) {
@@ -427,18 +504,25 @@ export default {
   .level_card_icon {
     position: absolute;
     right: 0;
-    top: 50px;
+    top: 70px;
     height: 380px;
     max-height: 35%;
     width: 200px;
     max-width: 70%;
     object-fit: contain;
   }
-    
-  .removeBtn {
+
+  .actionBtns {
     position: absolute;
     top: 5px;
-    right: 5px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+  }
+
+  .editBtn {
+    font-size: 19px;
+    color: #ec4848;
   }
 }
 .new_level_card {

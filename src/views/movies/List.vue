@@ -37,11 +37,13 @@
                     </svg>
                   </div>
                   <router-link :to="'/movies/' + subject.id">
-                    <img
-                      src="@/assets/images/missions/mission_icon.png"
-                      alt=""
-                      class="mission_icon"
-                    />
+                    <div class="w-100">
+                      <img
+                        src="@/assets/images/missions/mission_icon.png"
+                        alt=""
+                        class="mission_icon"
+                      />
+                    </div>
 
                     <h3 class="mt-2">{{ subject.name }}</h3>
                   </router-link>
@@ -205,6 +207,7 @@ export default {
       this.subjectName = "";
     },
     setEditSubject(subject) {
+      this.subjectName = subject.name;
       this.editSubject = true;
       this.editSubjectId = subject.id;
       this.$bvModal.show("add-subject-modal");
