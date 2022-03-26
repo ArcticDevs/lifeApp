@@ -237,7 +237,7 @@
               </b-card>
             </b-tab>
             <b-tab title="Quiz" :disabled="!lang.movieId">
-              <div class="w-100 text-right mb-2" v-if="lang.quizId">
+              <div class="w-100 text-right mb-2" v-if="lang.quizId!=''">
                 <div
                   class="btn btn-primary addQuestionBtn"
                   @click="$bvModal.show(`modal-add-question${langIndex}`)"
@@ -274,7 +274,7 @@
                           v-model="lang.quizPoints.brain_points"
                           :state="errors.length > 0 ? false : null"
                           placeholder="Brain Points"
-                          :disabled="lang.quizId && !lang.editQuiz"
+                          :disabled="lang.quizId!='' && !lang.editQuiz"
                         />
                         <small class="text-danger">{{ errors[0] }}</small>
                       </validation-provider>
@@ -290,7 +290,7 @@
                           v-model="lang.quizPoints.heart_points"
                           :state="errors.length > 0 ? false : null"
                           placeholder="Heart Points"
-                          :disabled="lang.quizId && !lang.editQuiz"
+                          :disabled="lang.quizId!='' && !lang.editQuiz"
                         />
                         <small class="text-danger">{{ errors[0] }}</small>
                       </validation-provider>
@@ -302,26 +302,27 @@
                       class="mb-2 mb-md-0 pl-md-3 text-center text-md-left"
                     >
                       <b-button
-                        v-if="!lang.editQuiz"
+                        v-if="!lang.editQuiz && lang.quizId==''"
                         variant="primary"
                         type="submit"
                         class="addPointsBtn mr-2"
                         @click.prevent="submitQuizPoints(langIndex)"
-                        :disabled="lang.quizId && !lang.editQuiz"
+                        :disabled="lang.quizId!='' && !lang.editQuiz"
                       >
                         Submit
                       </b-button>
                       <b-button
-                        v-else
+                        v-else-if="lang.editQuiz"
                         variant="primary"
                         type="submit"
                         class="addPointsBtn mr-2"
                         @click.prevent="updateQuizPoints(langIndex)"
-                        :disabled="lang.quizId && !lang.editQuiz"
+                        :disabled="lang.quizId!='' && !lang.editQuiz"
                       >
                         Update
                       </b-button>
                       <b-button
+                        v-if="lang.quizId!=''"
                         variant="outline-primary"
                         type="submit"
                         class="addPointsBtn"
@@ -348,7 +349,7 @@
                         v-for="(question, questionIndex) in quiz.question"
                         :key="questionIndex"
                       >
-                        <div class="w-100 text-right mb-2" v-if="lang.quizId">
+                        <div class="w-100 text-right mb-2" v-if="lang.quizId!=''">
                           <div
                             class="btn btn-outline-primary mr-1"
                             @click="
@@ -1455,6 +1456,7 @@ export default {
       axios
         .post("/admin/v1/movies/movie", {
           topic_id: self.topicId,
+          locale: 'En'
         })
         .then(({ data }) => {
           if (data.movie.length > 0) {
@@ -1464,7 +1466,6 @@ export default {
                   lang.isMoviePosted = true;
                   lang.movieId = item.id;
                   lang.movieForm = {
-                    // movie: item.media ? item.media.name : null,
                     movie: null,
                     title: item.title,
                     movie_type: item.movie_type,
@@ -1498,6 +1499,7 @@ export default {
       axios
         .post("/admin/v1/movies/quiz", {
           movie_id: movieId,
+          locale: 'En'
         })
         .then(({ data }) => {
           // console.log(data);
@@ -2058,8 +2060,8 @@ export default {
         });
     },
     updateQuestion(index, quizIndex, questionIndex) {
-      this.$refs["quizEditQuestionRules"][index].validate().then((success) => {
-        if (success) {
+      // this.$refs["quizEditQuestionRules"][index].validate().then((success) => {
+      //   if (success) {
           var postQuizData = new FormData();
           postQuizData.append(
             "question_id",
@@ -2137,8 +2139,8 @@ export default {
               });
             });
         }
-      });
-    },
+      // });
+    // },
   },
 };
 </script>
