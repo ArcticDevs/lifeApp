@@ -1260,7 +1260,7 @@ export default {
       langs: [
         {
           name: "English",
-          code: "En",
+          code: "en",
           isMoviePosted: false,
           isQuizPosted: false,
           movieId: "",
@@ -1303,7 +1303,7 @@ export default {
         },
         {
           name: "Hindi",
-          code: "Hn",
+          code: "hi",
           isMoviePosted: false,
           isQuizPosted: false,
           movieId: "",
@@ -1347,7 +1347,7 @@ export default {
         },
         {
           name: "Marathi",
-          code: "Ma",
+          code: "mr",
           isMoviePosted: false,
           isQuizPosted: false,
           movieId: "",
@@ -1390,7 +1390,7 @@ export default {
           },
         },
       ],
-      locale: "En",
+      locale: "en",
       documentNameKey: 0,
       optionNameKey: 0,
       quizPoints: {
@@ -1456,7 +1456,7 @@ export default {
       axios
         .post("/admin/v1/movies/movie", {
           topic_id: self.topicId,
-          locale: 'En'
+          locale: 'en'
         })
         .then(({ data }) => {
           if (data.movie.length > 0) {
@@ -1499,7 +1499,7 @@ export default {
       axios
         .post("/admin/v1/movies/quiz", {
           movie_id: movieId,
-          locale: 'En'
+          locale: 'en'
         })
         .then(({ data }) => {
           // console.log(data);
@@ -1542,7 +1542,7 @@ export default {
         });
     },
     setActiveLangTab(lang) {
-      if (lang.code !== "En") {
+      if (lang.code !== "en") {
         if (!lang.isMoviePosted) {
           if (this.langs[0].isMoviePosted && this.langs[0].isQuizPosted) {
             this.$swal({
@@ -1560,7 +1560,7 @@ export default {
                 this.locale = lang.code;
               } else if (result.isDenied) {
                 this.tabIndex = 0;
-                this.locale = "En";
+                this.locale = "en";
               }
             });
           } else {
@@ -1574,14 +1574,14 @@ export default {
               buttonsStyling: false,
             }).then(() => {
               this.tabIndex = 0;
-              this.locale = "En";
+              this.locale = "en";
             });
           }
         } else {
           this.locale = lang.code;
         }
       } else {
-        this.locale = "En";
+        this.locale = "en";
       }
     },
     submitMovie(index) {

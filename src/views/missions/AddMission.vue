@@ -324,7 +324,7 @@ export default {
         images: [{}],
         document: { file: null, name: "" },
       },
-      locale: "En",
+      locale: "en",
       required,
       email,
       integer,
@@ -345,9 +345,9 @@ export default {
         },
       ],
       langs: [
-        { name: "English", code: "En" },
-        { name: "Hindi", code: "Hn" },
-        { name: "Marathi", code: "Ma" },
+        { name: "English", code: "en" },
+        { name: "Hindi", code: "hi" },
+        { name: "Marathi", code: "mr" },
       ],
       missionId: "",
     };
