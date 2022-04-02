@@ -44,7 +44,7 @@
             <div class="level_card_content col-8 col-md-6 col-lg-8 pr-0">
               <h2>{{ level.level }}</h2>
               <p>
-                {{ level.description }}
+                {{ level.local_data[0].description }}
               </p>
               <router-link :to="'/movies/' + subjectId + '/' + level.id">
                 <div class="StartBtn">Start</div>
@@ -85,60 +85,198 @@
           id="add-level-modal"
           centered
           hide-footer
-          size="lg"
+          size="xl"
           :title="editLevel ? 'Edit Level' : 'Add Level'"
+          @hide="modalClose"
         >
           <div class="h-100 w-100 p-3">
-            <!-- level name -->
-            <label for="levelName">Level Name</label>
-            <b-form-input
-              id="levelName"
-              v-model="levelName"
-              placeholder="Level Name"
-            />
+            <validation-observer ref="addLevelRules">
+              <b-form novalidate class="needs-validation" id="addLevelForm">
+                <div class="row">
+                  <div class="col-12 col-lg-4">
+                    <!-- total rewards -->
+                    <label for="rewards" class="mt-2">Total rewards</label>
+                    <validation-provider
+                      #default="{ errors }"
+                      name="Total rewards"
+                      rules="required|integer"
+                    >
+                      <b-form-input
+                        id="rewards"
+                        v-model="totalRewards"
+                        placeholder="Total rewards"
+                      />
+                      <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider>
+                  </div>
+                  <div class="col-12 col-lg-4">
+                    <!-- Total topic -->
+                    <label for="totalTopic" class="mt-2 d-block"
+                      >Total topic</label
+                    >
+                    <validation-provider
+                      #default="{ errors }"
+                      name="Total topic"
+                      rules="required|integer"
+                    >
+                      <b-form-input
+                        id="totalTopic"
+                        v-model="totalTopic"
+                        placeholder="Total topic"
+                      />
+                      <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider>
+                  </div>
+                  <div class="col-12 col-lg-4">
+                    <!-- level name -->
+                    <label for="levelName" class="mt-2 d-block"
+                      >Level Name</label
+                    >
+                    <validation-provider
+                      #default="{ errors }"
+                      name="Level Name"
+                      rules="required|integer"
+                    >
+                      <b-form-input
+                        id="levelName"
+                        v-model="levelName"
+                        placeholder="Level Name"
+                      />
+                      <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider>
+                  </div>
+                </div>
 
-            <!-- description -->
-            <label for="description" class="mt-2">Description</label>
-            <b-form-textarea
-              id="description"
-              v-model="levelDescription"
-              placeholder="Description"
-              rows="3"
-            />
+                <div class="row">
+                  <div class="col-12 col-lg-4">
+                    <!-- level name -->
+                    <!-- <label for="levelNameEnglish" class="mt-2 d-block"
+                      >Level Name - <b>English</b></label
+                    >
+                    <validation-provider
+                      #default="{ errors }"
+                      name="Level Name"
+                      rules="required"
+                    >
+                      <b-form-input
+                        id="levelNameEnglish"
+                        v-model="levelNameEnglish"
+                        placeholder="Level Name"
+                      />
+                      <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider> -->
 
-            <!-- total rewards -->
-            <label for="rewards" class="mt-2">Total rewards</label>
-            <b-form-input
-              id="rewards"
-              v-model="totalRewards"
-              placeholder="Total rewards"
-            />
+                    <!-- description -->
+                    <label for="descriptionEnglish" class="mt-2 d-block"
+                      >Description - <b>English</b></label
+                    >
+                    <validation-provider
+                      #default="{ errors }"
+                      name="Description"
+                      rules="required"
+                    >
+                      <b-form-textarea
+                        id="descriptionEnglish"
+                        v-model="levelDescriptionEnglish"
+                        placeholder="Description"
+                        rows="3"
+                      />
+                      <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider>
+                  </div>
+                  <div class="col-12 col-lg-4">
+                    <!-- level name -->
+                    <!-- <label for="levelNameHindi" class="mt-2 d-block"
+                      >Level Name - <b>Hindi</b></label
+                    >
+                    <validation-provider
+                      #default="{ errors }"
+                      name="Level Name"
+                      rules="required"
+                    >
+                      <b-form-input
+                        id="levelNameHindi"
+                        v-model="levelNameHindi"
+                        placeholder="Level Name"
+                      />
+                      <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider> -->
 
-            <!-- Total topic -->
-            <label for="totalTopic" class="mt-2">Total topic</label>
-            <b-form-input
-              id="totalTopic"
-              v-model="totalTopic"
-              placeholder="Total topic"
-            />
+                    <!-- description -->
+                    <label for="descriptionHindi" class="mt-2 d-block"
+                      >Description - <b>Hindi</b></label
+                    >
+                    <!-- <validation-provider
+                      #default="{ errors }"
+                      name="Description"
+                      rules="required"
+                    > -->
+                    <b-form-textarea
+                      id="descriptionHindi"
+                      v-model="levelDescriptionHindi"
+                      placeholder="Description"
+                      rows="3"
+                    />
+                    <!-- <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider> -->
+                  </div>
+                  <div class="col-12 col-lg-4">
+                    <!-- level name -->
+                    <!-- <label for="levelNameMarathi" class="mt-2 d-block"
+                      >Level Name - <b>Marathi</b></label
+                    >
+                    <validation-provider
+                      #default="{ errors }"
+                      name="Level Name"
+                      rules="required"
+                    >
+                      <b-form-input
+                        id="levelNameMarathi"
+                        v-model="levelNameMarathi"
+                        placeholder="Level Name"
+                      />
+                      <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider> -->
 
-            <!-- add button -->
-            <div class="text-center w-100 mt-3">
-              <b-button
-                v-if="!editLevel"
-                variant="primary"
-                class="addBtn"
-                @click.prevent="addLevel()"
-                >Add</b-button
-              >
-              <b-button
-                v-else
-                variant="primary"
-                class="addBtn"
-                @click.prevent="updateLevel()"
-                >Update</b-button
-              >
-            </div>
+                    <!-- description -->
+                    <label for="descriptionMarathi" class="mt-2 d-block"
+                      >Description - <b>Marathi</b></label
+                    >
+                    <!-- <validation-provider
+                      #default="{ errors }"
+                      name="Description"
+                      rules="required"
+                    > -->
+                    <b-form-textarea
+                      id="descriptionMarathi"
+                      v-model="levelDescriptionMarathi"
+                      placeholder="Description"
+                      rows="3"
+                    />
+                    <!-- <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider> -->
+                  </div>
+                </div>
+
+                <!-- add button -->
+                <div class="text-center w-100 mt-3">
+                  <b-button
+                    v-if="!editLevel"
+                    variant="primary"
+                    class="addBtn"
+                    @click.prevent="addLevel()"
+                    >Add</b-button
+                  >
+                  <b-button
+                    v-else
+                    variant="primary"
+                    class="addBtn"
+                    @click.prevent="updateLevel()"
+                    >Update</b-button
+                  >
+                </div>
+              </b-form>
+            </validation-observer>
           </div>
         </b-modal>
       </div>
@@ -149,6 +287,9 @@
 <script>
 import BCardCode from "@core/components/b-card-code";
 import axios from "axios";
+import { ValidationProvider, ValidationObserver } from "vee-validate";
+import { required, integer } from "@validations";
+
 import {
   BBreadcrumb,
   BCard,
@@ -165,6 +306,8 @@ import {
 
 export default {
   components: {
+    ValidationProvider,
+    ValidationObserver,
     BBreadcrumb,
     BCardCode,
     BCard,
@@ -205,7 +348,12 @@ export default {
       ],
 
       levelName: "",
-      levelDescription: "",
+      // levelNameEnglish: "",
+      levelDescriptionEnglish: "",
+      // levelNameHindi: "",
+      levelDescriptionHindi: "",
+      // levelNameMarathi: "",
+      levelDescriptionMarathi: "",
       totalRewards: "",
       totalTopic: "",
       levels: [],
@@ -223,49 +371,71 @@ export default {
       axios
         .post("/admin/v1/movies/get-subject", { subject_id: this.subjectId })
         .then(({ data }) => {
-          console.log(data.subjects);
-          this.breadcrumbs[1].text = data.subjects[0].name;
-          this.subjectName = data.subjects[0].name;
+          this.breadcrumbs[1].text = data.subjects[0].locale_data[0].title;
+          this.subjectName = data.subjects[0].locale_data[0].title;
           this.levels = data.subjects[0].levels;
         })
         .catch((error) => {
           console.log(error);
         });
     },
+    modalClose() {
+      this.editLevel = false;
+      this.editLevelId = "";
+      this.levelName = "";
+      this.levelDescriptionEnglish = "";
+      this.levelDescriptionHindi = "";
+      this.levelDescriptionMarathi = "";
+      this.totalRewards = "";
+      this.totalTopic = "";
+    },
     addLevel() {
-      var levelData = {
-        subject_id: this.subjectId,
-        level: this.levelName,
-        description: this.levelDescription,
-        total_rewards: this.totalRewards,
-        total_question: this.totalTopic,
-      };
-      axios
-        .post("/admin/v1/movies/create-level", levelData)
-        .then(({ data }) => {
-          // this.levels.push({
-          //   subject_id: this.subjectId,
-          //   level: this.levelName,
-          //   description: this.levelDescription,
-          //   total_rewards: this.totalRewards,
-          //   total_question: this.totalTopic,
-          // });
-          this.getSubject();
-          console.log(data);
-          this.$bvModal.hide("add-level-modal");
-          this.levelName = "";
-          this.levelDescription = "";
-          this.totalRewards = "";
-          this.totalTopic = "";
-          this.componentKey += 1;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      this.$refs.addLevelRules.validate().then((success) => {
+        if (success) {
+          var levelData = {
+            subject_id: this.subjectId,
+            level: this.levelName,
+            levels: [
+              this.levelDescriptionEnglish && {
+                description: this.levelDescriptionEnglish,
+                locale: "En",
+              },
+              this.levelDescriptionHindi && {
+                description: this.levelDescriptionHindi,
+                locale: "Hi",
+              },
+              this.levelDescriptionMarathi && {
+                description: this.levelDescriptionMarathi,
+                locale: "Mr",
+              },
+            ],
+            total_rewards: this.totalRewards,
+            total_question: this.totalTopic,
+          };
+          axios
+            .post("/admin/v1/movies/create-levels", levelData)
+            .then(({ data }) => {
+              this.getSubject();
+              this.$bvModal.hide("add-level-modal");
+              this.levelName = "";
+              this.levelDescriptionEnglish = "";
+              this.levelDescriptionHindi = "";
+              this.levelDescriptionMarathi = "";
+              this.totalRewards = "";
+              this.totalTopic = "";
+              this.componentKey += 1;
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+      });
     },
     setEditLevel(level) {
       this.levelName = level.level;
-      this.levelDescription = level.description;
+      this.levelDescriptionEnglish = level.local_data[0].description || "";
+      this.levelDescriptionHindi = level.local_data[1].description || "";
+      this.levelDescriptionMarathi = level.local_data[2].description || "";
       this.totalRewards = level.total_rewards;
       this.totalTopic = level.total_question;
       this.editLevel = true;
@@ -275,19 +445,25 @@ export default {
     updateLevel() {
       let updateData = {
         level: this.levelName,
-        description: this.levelDescription,
+        levels: [
+          { description: this.levelDescriptionEnglish, locale: "En" },
+          { description: this.levelDescriptionHindi, locale: "Hi" },
+          { description: this.levelDescriptionMarathi, locale: "Mr" },
+        ],
         total_rewards: this.totalRewards,
         total_question: this.totalTopic,
         level_id: this.editLevelId,
       };
       axios
-        .post(`/admin/v1/movies/update-level?_method=PUT`, updateData)
+        .post(`/admin/v1/movies/update-levels?_method=PUT`, updateData)
         .then(({ data }) => {
           this.$bvModal.hide("add-level-modal");
           this.editLevel = false;
           this.editLevelId = "";
           this.levelName = "";
-          this.levelDescription = "";
+          this.levelDescriptionEnglish = "";
+          this.levelDescriptionHindi = "";
+          this.levelDescriptionMarathi = "";
           this.totalRewards = "";
           this.totalTopic = "";
           this.getSubject();
@@ -303,7 +479,9 @@ export default {
             this.editLevel = false;
             this.editLevelId = "";
             this.levelName = "";
-            this.levelDescription = "";
+            this.levelDescriptionEnglish = "";
+            this.levelDescriptionHindi = "";
+            this.levelDescriptionMarathi = "";
             this.totalRewards = "";
             this.totalTopic = "";
           });

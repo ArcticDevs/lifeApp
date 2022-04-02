@@ -9,7 +9,7 @@
             <!-- List Top -->
             <div class="row">
               <div
-                class="col-12 col-sm-6 col-md-4 col-lg-3 h-100"
+                class="col-12 col-sm-6 col-md-4 col-lg-3"
                 v-for="(subject, subIndex) in subjects"
                 :key="subIndex"
               >
@@ -45,22 +45,24 @@
                       />
                     </div>
 
-                    <h3 class="mt-2">{{ subject.name }}</h3>
+                    <h3 class="mt-2">{{ subject.locale_data[0].title }}</h3>
                   </router-link>
                 </b-card>
               </div>
-              <div class="col-12 col-sm-6 col-md-4 col-lg-3 h-100">
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                 <!-- Add subject card -->
                 <b-card
                   class="mission_card text-center"
                   v-b-modal.add-subject-modal
                 >
-                  <img
-                    src="@/assets/images/missions/plus_icon.png"
-                    alt=""
-                    class="mission_icon_plus"
-                  />
-                  <h3 class="mt-2">Add a subject</h3>
+                  <div class="add-subject-icon">
+                    <img
+                      src="@/assets/images/missions/plus_icon.png"
+                      alt=""
+                      class="mission_icon_plus"
+                    />
+                    <h3 class="mt-2">Add a subject</h3>
+                  </div>
                 </b-card>
 
                 <!-- Add subject modal -->
@@ -70,37 +72,85 @@
                   hide-footer
                   size="lg"
                   :title="editSubject ? 'Edit Subject' : 'Add Subject'"
+                  @hide="modalClose"
                 >
                   <div class="h-100 w-100 p-3">
-                    <label for="subjectName">Subject Name</label>
-                    <b-form-input
-                      id="subjectName"
-                      v-model="subjectName"
-                      placeholder="Subject Name"
-                    />
-                    <div class="text-center w-100 mt-3">
-                      <b-button
-                        v-if="!editSubject"
-                        variant="primary"
-                        class="addBtn"
-                        @click.prevent="addSubject()"
-                        >Add</b-button
+                    <validation-observer ref="addSubjectRules">
+                      <b-form
+                        novalidate
+                        class="needs-validation"
+                        id="addSubjectForm"
                       >
-                      <b-button
-                        v-else
-                        variant="primary"
-                        class="addBtn"
-                        @click.prevent="updateSubject()"
-                        >Update</b-button
-                      >
-                    </div>
+                        <label for="subjectNameEnglish"
+                          >Subject Name - <b> English </b></label
+                        >
+                        <validation-provider
+                          #default="{ errors }"
+                          name="Subject Name"
+                          rules="required"
+                        >
+                          <b-form-input
+                            id="subjectNameEnglish"
+                            v-model="subjectNameEnglish"
+                            placeholder="Subject Name"
+                          />
+                          <small class="text-danger">{{ errors[0] }}</small>
+                        </validation-provider>
+                        <label for="subjectNameHindi" class="mt-2 d-block"
+                          >Subject Name - <b> Hindi </b></label
+                        >
+                        <!-- <validation-provider
+                          #default="{ errors }"
+                          name="Subject Name"
+                          rules="required"
+                        > -->
+                        <b-form-input
+                          id="subjectNameHindi"
+                          v-model="subjectNameHindi"
+                          placeholder="Subject Name"
+                        />
+                        <!-- <small class="text-danger">{{ errors[0] }}</small>
+                        </validation-provider> -->
+                        <label for="subjectNameMarathi" class="mt-2 d-block"
+                          >Subject Name - <b> Marathi </b></label
+                        >
+                        <!-- <validation-provider
+                          #default="{ errors }"
+                          name="Subject Name"
+                          rules="required"
+                        > -->
+                        <b-form-input
+                          id="subjectNameMarathi"
+                          v-model="subjectNameMarathi"
+                          placeholder="Subject Name"
+                        />
+                        <!-- <small class="text-danger">{{ errors[0] }}</small>
+                        </validation-provider> -->
+                        <div class="text-center w-100 mt-3">
+                          <b-button
+                            v-if="!editSubject"
+                            variant="primary"
+                            class="addBtn"
+                            @click.prevent="addSubject()"
+                            >Add</b-button
+                          >
+                          <b-button
+                            v-else
+                            variant="primary"
+                            class="addBtn"
+                            @click.prevent="updateSubject()"
+                            >Update</b-button
+                          >
+                        </div>
+                      </b-form>
+                    </validation-observer>
                   </div>
                 </b-modal>
               </div>
             </div>
           </div>
         </b-col>
-        <b-table striped hover :items="items" :fields="fields"></b-table>
+        <!-- <b-table striped hover :items="items" :fields="fields"></b-table> -->
       </b-row>
       <hr />
     </b-card>
@@ -122,9 +172,13 @@ import {
   BButton,
   BTable,
 } from "bootstrap-vue";
+import { ValidationProvider, ValidationObserver } from "vee-validate";
+import { required } from "@validations";
 
 export default {
   components: {
+    ValidationProvider,
+    ValidationObserver,
     BBreadcrumb,
     BCardCode,
     BCard,
@@ -162,7 +216,9 @@ export default {
         { isActive: false, age: 89, first_name: "Geneva", last_name: "Wilson" },
         { isActive: true, age: 38, first_name: "Jami", last_name: "Carney" },
       ],
-      subjectName: "",
+      subjectNameEnglish: "",
+      subjectNameHindi: "",
+      subjectNameMarathi: "",
       subjects: [],
       editSubject: false,
       editSubjectId: "",
@@ -176,69 +232,106 @@ export default {
       axios
         .get("/admin/v1/movies/subjects")
         .then((response) => {
-          console.log(response.data.subjects);
           this.subjects = response.data.subjects;
-          console.log(this.subjects);
         })
         .catch((error) => {
           console.log(error);
         });
     },
+    modalClose() {
+      this.editSubject = false;
+      this.editSubjectId = "";
+      this.subjectNameEnglish = "";
+      this.subjectNameHindi = "";
+      this.subjectNameMarathi = "";
+    },
     addSubject() {
-      var subjectData = {
-        name: this.subjectName,
-      };
-      axios
-        .post("/admin/v1/movies/create-subject", subjectData)
-        .then((response) => {
-          console.log(response);
-          this.getSubjectsList();
-        })
-        .catch((error) => {
-          console.error(error);
-          this.$swal(
-            "Error!",
-            "Some error occurred. Please try again",
-            "error"
-          );
-        });
+      this.$refs.addSubjectRules.validate().then((success) => {
+        if (success) {
+          var subjectData = {
+            subject: [
+              this.subjectNameEnglish && {
+                title: this.subjectNameEnglish,
+                locale: "En",
+              },
+              this.subjectNameHindi && {
+                title: this.subjectNameHindi,
+                locale: "Hi",
+              },
+              this.subjectNameMarathi && {
+                title: this.subjectNameMarathi,
+                locale: "Mr",
+              },
+            ],
+          };
+          axios
+            .post("/admin/v1/movies/create-subjects", subjectData)
+            .then((response) => {
+              this.getSubjectsList();
+            })
+            .catch((error) => {
+              console.error(error);
+              this.$swal(
+                "Error!",
+                "Some error occurred. Please try again",
+                "error"
+              );
+            });
 
-      this.$bvModal.hide("add-subject-modal");
-      this.subjectName = "";
+          this.$bvModal.hide("add-subject-modal");
+          this.subjectNameEnglish = "";
+          this.subjectNameHindi = "";
+          this.subjectNameMarathi = "";
+        }
+      });
     },
     setEditSubject(subject) {
-      this.subjectName = subject.name;
+      this.subjectNameEnglish = subject.locale_data[0].title;
+      this.subjectNameHindi = subject.locale_data[1].title;
+      this.subjectNameMarathi = subject.locale_data[2].title;
       this.editSubject = true;
       this.editSubjectId = subject.id;
       this.$bvModal.show("add-subject-modal");
     },
     updateSubject() {
-      let updateData = {
-        name: this.subjectName,
-        subject_id: this.editSubjectId,
-      };
-      axios
-        .post(`/admin/v1/movies/update-subject?_method=PUT`, updateData)
-        .then(({ data }) => {
-          this.$bvModal.hide("add-subject-modal");
-          this.editSubject = false;
-          this.editSubjectId = "";
-          this.subjectName = "";
-          this.getSubjectsList();
-        })
-        .catch((resp) => {
-          console.error(resp);
-          this.$swal(
-            "Error!",
-            "Some error occurred. Please try again",
-            "error"
-          ).then(() => {
-            this.$bvModal.hide("add-subject-modal");
-            this.editSubject = false;
-            this.editSubjectId = "";
-            this.subjectName = "";
-          });
-        });
+      this.$refs.addSubjectRules.validate().then((success) => {
+        if (success) {
+          let updateData = {
+            subject_id: this.editSubjectId,
+            subject: [
+              { title: this.subjectNameEnglish, locale: "En" },
+              { title: this.subjectNameHindi, locale: "Hi" },
+              { title: this.subjectNameMarathi, locale: "Mr" },
+            ],
+          };
+          axios
+            .post(`/admin/v1/movies/update-subjects?_method=PUT`, updateData)
+            .then(({ data }) => {
+              this.$bvModal.hide("add-subject-modal");
+              this.editSubject = false;
+              this.editSubjectId = "";
+              this.subjectNameEnglish = "";
+              this.subjectNameHindi = "";
+              this.subjectNameMarathi = "";
+              this.getSubjectsList();
+            })
+            .catch((resp) => {
+              console.error(resp);
+              this.$swal(
+                "Error!",
+                "Some error occurred. Please try again",
+                "error"
+              ).then(() => {
+                this.$bvModal.hide("add-subject-modal");
+                this.editSubject = false;
+                this.editSubjectId = "";
+                this.subjectNameEnglish = "";
+                this.subjectNameHindi = "";
+                this.subjectNameMarathi = "";
+              });
+            });
+        }
+      });
     },
     removeSubject(subjectId) {
       let self = this;
@@ -284,7 +377,8 @@ export default {
 <style lang="scss" scoped>
 .mission_card {
   border-radius: 20px;
-  height: 200px;
+  min-height: 200px;
+  height: 90%;
   box-shadow: 0 2px 5px rgb(167, 166, 166) !important;
   position: relative;
 
@@ -292,10 +386,6 @@ export default {
     height: 110px;
     aspect-ratio: 1/1;
     margin: auto;
-  }
-  .mission_icon_plus {
-    height: 50px;
-    margin-top: 30px;
   }
 
   h3 {
@@ -313,6 +403,17 @@ export default {
   .editBtn {
     font-size: 19px;
     color: #ec4899;
+  }
+
+  .add-subject-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    .mission_icon_plus {
+      height: 50px;
+    }
   }
 }
 .addBtn {

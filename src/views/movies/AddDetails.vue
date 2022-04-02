@@ -344,7 +344,7 @@
                     v-for="(quiz, quizIndex) in lang.quizData"
                     :key="quizIndex"
                   >
-                    <div v-if="quiz.locale === locale">
+                    <div v-if="quiz.locale.toLowerCase() === locale.toLowerCase()">
                       <b-card
                         v-for="(question, questionIndex) in quiz.question"
                         :key="questionIndex"
@@ -1403,16 +1403,13 @@ export default {
     var postData = {
       level_id: this.levelId,
     };
-    // console.log(postData);
     axios
       .post("admin/v1/movies/topics", postData)
       .then(({ data }) => {
-        // console.log(data);
         data.topics.forEach((element) => {
           if (element.id == this.topicId) {
-            // console.log(element.id == this.topicId);
-            this.topicDescription = element.description;
-            this.title = element.title;
+            this.title = element.local_data[0].title;
+            this.description = element.local_data[0].description;
           }
         });
       })
@@ -1425,7 +1422,7 @@ export default {
     axios
       .post("/admin/v1/movies/get-subject", { subject_id: this.subjectId })
       .then(({ data }) => {
-        this.breadcrumbs[1].text = data.subjects[0].name;
+        this.breadcrumbs[1].text = data.subjects[0].locale_data[0].title;
         data.subjects[0].levels.forEach((level) => {
           if (level.id == this.levelId) {
             this.breadcrumbs[2].text = level.level + "";
@@ -1439,7 +1436,7 @@ export default {
     axios
       .post("/admin/v1/movies/get-topic", { topic_id: this.topicId })
       .then(({ data }) => {
-        this.breadcrumbs[3].text = data.topic[0].title;
+        this.breadcrumbs[3].text = data.topic[0].local_data[0].title;
       })
       .catch((resp) => {
         console.error(resp);
@@ -1462,7 +1459,7 @@ export default {
           if (data.movie.length > 0) {
             data.movie.forEach((item) => {
               self.langs.forEach((lang, i) => {
-                if (item.locale === lang.code) {
+                if (item.locale.toLowerCase() === lang.code.toLowerCase()) {
                   lang.isMoviePosted = true;
                   lang.movieId = item.id;
                   lang.movieForm = {
@@ -1502,7 +1499,6 @@ export default {
           locale: 'en'
         })
         .then(({ data }) => {
-          // console.log(data);
           if (data.quiz.length > 0) {
             self.langs[index].quizData = [];
             data.quiz.forEach((item) => {
@@ -1513,7 +1509,7 @@ export default {
               self.langs[index].quizData.push({ ...val });
 
               self.langs.forEach((lang) => {
-                if (item.locale === lang.code) {
+                if (item.locale.toLowerCase() === lang.code.toLowerCase()) {
                   lang.isQuizPosted = true;
                   lang.quizId = item.id;
                   lang.quizPoints = {
@@ -1523,7 +1519,6 @@ export default {
                 }
               });
             });
-            // console.log(self.quizData);
           } else {
             self.langs[index].quizData = [];
           }
@@ -1604,7 +1599,6 @@ export default {
           axios
             .post("/admin/v1/movies/create-movie", movieFormData)
             .then(({ data }) => {
-              console.log(data);
               this.movieId = data.data;
               this.$swal({
                 title: "Movie Data Uploaded!",
@@ -1652,7 +1646,6 @@ export default {
           axios
             .post("/admin/v1/movies/update-movie?_method=PUT", movieFormData)
             .then(({ data }) => {
-              console.log(data);
               this.movieId = data.data;
               this.$swal({
                 title: "Movie Data Updated!",
@@ -1820,7 +1813,6 @@ export default {
           axios
             .post("/admin/v1/movies/create-quiz", postQuizData)
             .then(({ data }) => {
-              console.log(data);
               this.langs[index].quizId = data.data;
               this.$swal({
                 title: "Quiz Points Allotted!",

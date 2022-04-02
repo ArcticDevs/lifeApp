@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-breadcrumb class="breadcrumb-slash" :items="breadcrumbs" />
-    <b-card class="subNameContainer bg_orange" v-if="topics">
+    <b-card class="subNameContainer bg_orange pr-5" v-if="topics">
       <div class="row m-0">
         <div class="col-8 col-md-6">
           <h2 class="subName">
@@ -22,11 +22,11 @@
             justify-content-lg-end
           "
         >
-          <span class="ml-1 ml-lg-0"
+          <span class="ml-0 mr-1 ml-lg-0"
             ><img src="@/assets/images/movies/svg/Star.svg" class="mr-1" />Total
             Reward : <span> {{ totalRewards }} Coins</span></span
           >
-          <span class="ml-lg-2 ml-1 mt-1 mt-lg-0"
+          <span class="ml-lg-2 ml-0 mt-1 mt-lg-0"
             ><img
               src="@/assets/images/movies/svg/Chart.svg"
               class="mr-1"
@@ -71,10 +71,10 @@
           </div>
           <router-link :to="$route.path + '/' + topic.id">
             <div class="level_card_content pr-0 mt-1">
-              <h2>{{ topic.title }}</h2>
+              <h2>{{ topic.local_data[0].title }}</h2>
               <div class="descriptionContainer">
                 <p>
-                  {{ topic.description }}
+                  {{ topic.local_data[0].description }}
                 </p>
               </div>
             </div>
@@ -112,85 +112,184 @@
           id="add-topic-modal"
           centered
           hide-footer
-          size="lg"
+          size="xl"
           title="Add topic"
+          @hide="modalClose"
         >
           <div class="h-100 w-100 p-3">
-            <!-- topic name -->
-            <label for="topicName">Topic Name</label>
-            <b-form-input
-              id="topicName"
-              v-model="topicForm.topicName"
-              placeholder="Topic Name"
-            />
+            <validation-observer ref="addTopicRules">
+              <b-form novalidate class="needs-validation" id="addTopicForm">
+                <div class="row">
+                  <div class="col-12 col-lg-4">
+                    <!-- topic name -->
+                    <label for="topicNameEnglish"
+                      >Topic Name - <b>English</b></label
+                    >
+                    <validation-provider
+                      #default="{ errors }"
+                      name="Topic name"
+                      rules="required"
+                    >
+                      <b-form-input
+                        id="topicNameEnglish"
+                        v-model="topicForm.topicNameEnglish"
+                        placeholder="Topic Name"
+                      />
+                      <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider>
 
-            <!-- description -->
-            <label for="description" class="mt-2">Description</label>
-            <b-form-textarea
-              id="description"
-              v-model="topicForm.topicDescription"
-              placeholder="Description"
-              rows="3"
-            />
+                    <!-- description -->
+                    <label for="descriptionEnglish" class="mt-2"
+                      >Description - <b>English</b></label
+                    >
+                    <validation-provider
+                      #default="{ errors }"
+                      name="Topic description"
+                      rules="required"
+                    >
+                      <b-form-textarea
+                        id="descriptionEnglish"
+                        v-model="topicForm.topicDescriptionEnglish"
+                        placeholder="Description"
+                        rows="3"
+                      />
+                      <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider>
+                  </div>
+                  <div class="col-12 col-lg-4">
+                    <!-- topic name -->
+                    <label for="topicNameHindi"
+                      >Topic Name - <b>Hindi</b></label
+                    >
+                    <!-- <validation-provider
+                      #default="{ errors }"
+                      name="Total rewards"
+                      rules="required"
+                    > -->
+                    <b-form-input
+                      id="topicNameHindi"
+                      v-model="topicForm.topicNameHindi"
+                      placeholder="Topic Name"
+                    />
+                    <!-- <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider> -->
 
-            <!-- Topic Image -->
-            <label class="mt-3">Topic Image</label>
-            <div class="fileUploadContainer mb-1 mr-2">
-              <div class="text-center">
-                <img
-                  src="@/assets/images/svg/file-upload.svg"
-                  alt="file upload"
-                />
-                <span class="d-block">Click to upload </span>
-              </div>
-              <b-form-file
-                accept="image/*"
-                @change="onImageSelected($event)"
-                id="topicImg"
-              ></b-form-file>
-              <img src="" alt="" id="previewImg" class="previewImg" />
-              <p
-                id="previewImgName"
-                class="m-0 previewImgName"
-                :key="imageNameKey"
-              >
-                {{ topicForm.topicImg.name }}
-              </p>
-              <!--          Remove Svg Icon-->
-              <svg
-                v-if="topicForm.topicImg.img != null"
-                @click="removeImage()"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="24"
-                height="24"
-                class="ml-2 cursor-pointer removeImg"
-              >
-                <path fill="none" d="M0 0h24v24H0z" />
-                <path
-                  fill="#EC4899"
-                  d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
-                />
-              </svg>
-            </div>
+                    <!-- description -->
+                    <label for="descriptionHindi" class="mt-2"
+                      >Description - <b>Hindi</b></label
+                    >
+                    <!-- <validation-provider
+                      #default="{ errors }"
+                      name="Total rewards"
+                      rules="required"
+                    > -->
+                    <b-form-textarea
+                      id="descriptionHindi"
+                      v-model="topicForm.topicDescriptionHindi"
+                      placeholder="Description"
+                      rows="3"
+                    />
+                    <!-- <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider> -->
+                  </div>
+                  <div class="col-12 col-lg-4">
+                    <!-- topic name -->
+                    <label for="topicNameMarathi"
+                      >Topic Name - <b>Marathi</b></label
+                    >
+                    <!-- <validation-provider
+                      #default="{ errors }"
+                      name="Total rewards"
+                      rules="required"
+                    > -->
+                    <b-form-input
+                      id="topicNameMarathi"
+                      v-model="topicForm.topicNameMarathi"
+                      placeholder="Topic Name"
+                    />
+                    <!-- <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider> -->
 
-            <!-- add button -->
-            <div class="text-center w-100 mt-3">
-              <b-button
-                v-if="!editTopic"
-                variant="primary"
-                class="addBtn"
-                @click.prevent="addTopic"
-                >Add</b-button
-              >
-              <b-button
-                v-else
-                variant="primary"
-                class="addBtn"
-                @click.prevent="updateTopic"
-                >Update</b-button
-              >
-            </div>
+                    <!-- description -->
+                    <label for="descriptionMarathi" class="mt-2"
+                      >Description - <b>Marathi</b></label
+                    >
+                    <!-- <validation-provider
+                      #default="{ errors }"
+                      name="Total rewards"
+                      rules="required"
+                    > -->
+                    <b-form-textarea
+                      id="descriptionMarathi"
+                      v-model="topicForm.topicDescriptionMarathi"
+                      placeholder="Description"
+                      rows="3"
+                    />
+                    <!-- <small class="text-danger">{{ errors[0] }}</small>
+                    </validation-provider> -->
+                  </div>
+                </div>
+
+                <!-- Topic Image -->
+                <label class="mt-3">Topic Image</label>
+                <div class="fileUploadContainer mb-1 mr-2">
+                  <div class="text-center">
+                    <img
+                      src="@/assets/images/svg/file-upload.svg"
+                      alt="file upload"
+                    />
+                    <span class="d-block">Click to upload </span>
+                  </div>
+                  <b-form-file
+                    accept="image/*"
+                    @change="onImageSelected($event)"
+                    id="topicImg"
+                  ></b-form-file>
+                  <img src="" alt="" id="previewImg" class="previewImg" />
+                  <p
+                    id="previewImgName"
+                    class="m-0 previewImgName"
+                    :key="imageNameKey"
+                  >
+                    {{ topicForm.topicImg.name }}
+                  </p>
+                  <!--          Remove Svg Icon-->
+                  <svg
+                    v-if="topicForm.topicImg.img != null"
+                    @click="removeImage()"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    height="24"
+                    class="ml-2 cursor-pointer removeImg"
+                  >
+                    <path fill="none" d="M0 0h24v24H0z" />
+                    <path
+                      fill="#EC4899"
+                      d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
+                    />
+                  </svg>
+                </div>
+
+                <!-- add button -->
+                <div class="text-center w-100 mt-3">
+                  <b-button
+                    v-if="!editTopic"
+                    variant="primary"
+                    class="addBtn"
+                    @click.prevent="addTopic"
+                    >Add</b-button
+                  >
+                  <b-button
+                    v-else
+                    variant="primary"
+                    class="addBtn"
+                    @click.prevent="updateTopic"
+                    >Update</b-button
+                  >
+                </div>
+              </b-form>
+            </validation-observer>
           </div>
         </b-modal>
       </div>
@@ -201,7 +300,8 @@
 <script>
 import BCardCode from "@core/components/b-card-code";
 import axios from "axios";
-
+import { ValidationProvider, ValidationObserver } from "vee-validate";
+import { required, integer } from "@validations";
 import {
   BBreadcrumb,
   BCard,
@@ -219,6 +319,8 @@ import {
 
 export default {
   components: {
+    ValidationProvider,
+    ValidationObserver,
     BBreadcrumb,
     BCardCode,
     BCard,
@@ -258,8 +360,12 @@ export default {
       ],
 
       topicForm: {
-        topicName: "",
-        topicDescription: "",
+        topicNameEnglish: "",
+        topicDescriptionEnglish: "",
+        topicNameHindi: "",
+        topicDescriptionHindi: "",
+        topicNameMarathi: "",
+        topicDescriptionMarathi: "",
         topicImg: { img: null, name: "" },
       },
       topics: [],
@@ -270,17 +376,15 @@ export default {
     };
   },
   created() {
-    console.log(this.subjectId);
     axios
       .post("/admin/v1/movies/get-subject", { subject_id: this.subjectId })
       .then(({ data }) => {
-        console.log(data);
-        this.breadcrumbs[1].text = data.subjects[0].name;
+        this.breadcrumbs[1].text = data.subjects[0].locale_data[0].title;
         data.subjects[0].levels.forEach((level) => {
           if (level.id == this.levelId) {
             this.breadcrumbs[2].text = level.level + "";
             this.levelName = level.level;
-            this.levelDescription = level.description;
+            this.levelDescription = level.local_data[0].description;
             this.totalRewards = level.total_rewards;
             this.totalQuestions = level.total_question;
           }
@@ -299,7 +403,6 @@ export default {
         .post("admin/v1/movies/topics", { level_id: this.levelId })
         .then(({ data }) => {
           this.topics = data.topics;
-          console.log(this.topics);
         })
         .catch((error) => {
           console.log(error);
@@ -330,45 +433,114 @@ export default {
       document.getElementById("previewImg").style.display = "none";
       self.imageNameKey++;
     },
+    modalClose() {
+      this.editTopic = false;
+      this.editTopicId = "";
+      this.topicForm.topicNameEnglish = "";
+      this.topicForm.topicDescriptionEnglish = "";
+      this.topicForm.topicNameHindi = "";
+      this.topicForm.topicDescriptionHindi = "";
+      this.topicForm.topicNameMarathi = "";
+      this.topicForm.topicDescriptionMarathi = "";
+    },
     addTopic() {
-      var topicData = new FormData();
-      topicData.append("level_id", this.levelId);
-      topicData.append("title", this.topicForm.topicName);
-      topicData.append("description", this.topicForm.topicDescription);
-      topicData.append("flag", 0);
-      topicData.append("image", this.topicForm.topicImg.img);
+      this.$refs.addTopicRules.validate().then((success) => {
+        if (success) {
+          if (this.topicForm.topicImg.name === "" && !this.editTopic) {
+            this.$swal(
+              "Image not uploaded!",
+              "Please upload an image",
+              "error"
+            );
+            return;
+          }
+          var topicData = new FormData();
+          topicData.append("level_id", this.levelId);
+          if (
+            this.topicForm.topicNameEnglish ||
+            this.topicForm.topicDescriptionEnglish
+          ) {
+            topicData.append("topic[0][locale]", "En");
+            topicData.append(
+              "topic[0][title]",
+              this.topicForm.topicNameEnglish
+            );
+            topicData.append(
+              "topic[0][description]",
+              this.topicForm.topicDescriptionEnglish
+            );
+          }
+          if (
+            this.topicForm.topicNameHindi ||
+            this.topicForm.topicDescriptionHindi
+          ) {
+            topicData.append("topic[1][locale]", "Hi");
+            topicData.append("topic[1][title]", this.topicForm.topicNameHindi);
+            topicData.append(
+              "topic[1][description]",
+              this.topicForm.topicDescriptionHindi
+            );
+          }
+          if (
+            this.topicForm.topicNameMarathi ||
+            this.topicForm.topicDescriptionMarathi
+          ) {
+            topicData.append("topic[2][locale]", "Mr");
+            topicData.append(
+              "topic[2][title]",
+              this.topicForm.topicNameMarathi
+            );
+            topicData.append(
+              "topic[2][description]",
+              this.topicForm.topicDescriptionMarathi
+            );
+          }
 
-      axios
-        .post("admin/v1/movies/create-topic", topicData)
-        .then(({ data }) => {
-          this.getTopics();
+          topicData.append("flag", 0);
+          topicData.append("image", this.topicForm.topicImg.img);
 
-          console.log(data);
-          this.$bvModal.hide("add-topic-modal");
+          axios
+            .post("admin/v1/movies/create-topics", topicData)
+            .then(({ data }) => {
+              this.getTopics();
 
-          this.topicForm.topicName = "";
-          this.topicForm.topicDescription = "";
-          this.topicForm.topicImg = "";
-        })
-        .catch((error) => {
-          console.log(error);
-          this.$swal(
-            "Error!",
-            "Some error occurred. Please try again",
-            "error"
-          );
-        });
+              this.$bvModal.hide("add-topic-modal");
+
+              this.topicForm.topicNameEnglish = "";
+              this.topicForm.topicDescriptionEnglish = "";
+              this.topicForm.topicNameHindi = "";
+              this.topicForm.topicDescriptionHindi = "";
+              this.topicForm.topicNameMarathi = "";
+              this.topicForm.topicDescriptionMarathi = "";
+              this.topicForm.topicImg = { img: null, name: "" };
+            })
+            .catch((error) => {
+              console.log(error);
+              this.$swal(
+                "Error!",
+                "Some error occurred. Please try again",
+                "error"
+              );
+            });
+        }
+      });
     },
     setEditTopic(topic) {
       this.isImageUpdated = false;
-
-      this.$bvModal.show("add-topic-modal");
-      this.topicForm.topicName = topic.title;
-      this.topicForm.topicDescription = topic.description;
-      // this.topicForm.topicImg.name = name;
-
       this.editTopic = true;
       this.editTopicId = topic.id;
+
+      this.$bvModal.show("add-topic-modal");
+      this.topicForm.topicNameEnglish = topic.local_data[0].title || "";
+      this.topicForm.topicDescriptionEnglish =
+        topic.local_data[0].description || "";
+      this.topicForm.topicNameHindi = topic.local_data[1].title || "";
+      this.topicForm.topicDescriptionHindi =
+        topic.local_data[1].description || "";
+      this.topicForm.topicNameMarathi = topic.local_data[2].title || "";
+      this.topicForm.topicDescriptionMarathi =
+        topic.local_data[2].description || "";
+
       document.getElementById(
         "previewImg"
       ).src = `https://media.gappubobo.com/${topic.image}`;
@@ -376,24 +548,90 @@ export default {
     updateTopic() {
       let updateData = new FormData();
       if (this.isImageUpdated) {
-        updateData.append("title", this.topicForm.topicName);
-        updateData.append("description", this.topicForm.topicDescription);
         updateData.append("image", this.topicForm.topicImg.img);
         updateData.append("topic_id", this.editTopicId);
+        if (
+          this.topicForm.topicNameEnglish ||
+          this.topicForm.topicDescriptionEnglish
+        ) {
+          updateData.append("topic[0][locale]", "En");
+          updateData.append("topic[0][title]", this.topicForm.topicNameEnglish);
+          updateData.append(
+            "topic[0][description]",
+            this.topicForm.topicDescriptionEnglish
+          );
+        }
+        if (
+          this.topicForm.topicNameHindi ||
+          this.topicForm.topicDescriptionHindi
+        ) {
+          updateData.append("topic[1][locale]", "Hi");
+          updateData.append("topic[1][title]", this.topicForm.topicNameHindi);
+          updateData.append(
+            "topic[1][description]",
+            this.topicForm.topicDescriptionHindi
+          );
+        }
+        if (
+          this.topicForm.topicNameMarathi ||
+          this.topicForm.topicDescriptionMarathi
+        ) {
+          updateData.append("topic[2][locale]", "Mr");
+          updateData.append("topic[2][title]", this.topicForm.topicNameMarathi);
+          updateData.append(
+            "topic[2][description]",
+            this.topicForm.topicDescriptionMarathi
+          );
+        }
       } else {
-        updateData.append("title", this.topicForm.topicName);
-        updateData.append("description", this.topicForm.topicDescription);
         updateData.append("topic_id", this.editTopicId);
+        if (
+          this.topicForm.topicNameEnglish ||
+          this.topicForm.topicDescriptionEnglish
+        ) {
+          updateData.append("topic[0][locale]", "En");
+          updateData.append("topic[0][title]", this.topicForm.topicNameEnglish);
+          updateData.append(
+            "topic[0][description]",
+            this.topicForm.topicDescriptionEnglish
+          );
+        }
+        if (
+          this.topicForm.topicNameHindi ||
+          this.topicForm.topicDescriptionHindi
+        ) {
+          updateData.append("topic[1][locale]", "Hi");
+          updateData.append("topic[1][title]", this.topicForm.topicNameHindi);
+          updateData.append(
+            "topic[1][description]",
+            this.topicForm.topicDescriptionHindi
+          );
+        }
+        if (
+          this.topicForm.topicNameMarathi ||
+          this.topicForm.topicDescriptionMarathi
+        ) {
+          updateData.append("topic[2][locale]", "Mr");
+          updateData.append("topic[2][title]", this.topicForm.topicNameMarathi);
+          updateData.append(
+            "topic[2][description]",
+            this.topicForm.topicDescriptionMarathi
+          );
+        }
       }
 
       axios
-        .post(`/admin/v1/movies/update-topic?_method=PUT`, updateData)
+        .post(`/admin/v1/movies/update-topics?_method=PUT`, updateData)
         .then(({ data }) => {
           this.$bvModal.hide("add-topic-modal");
           this.editTopic = false;
           this.editTopicId = "";
-          this.topicForm.topicName = "";
-          this.topicForm.topicDescription = "";
+          this.topicForm.topicNameEnglish = "";
+          this.topicForm.topicDescriptionEnglish = "";
+          this.topicForm.topicNameHindi = "";
+          this.topicForm.topicDescriptionHindi = "";
+          this.topicForm.topicNameMarathi = "";
+          this.topicForm.topicDescriptionMarathi = "";
           this.getTopics();
         })
         .catch((resp) => {
@@ -406,8 +644,12 @@ export default {
             this.$bvModal.hide("add-topic-modal");
             this.editTopic = false;
             this.editTopicId = "";
-            this.topicForm.topicName = "";
-            this.topicForm.topicDescription = "";
+            this.topicForm.topicNameEnglish = "";
+            this.topicForm.topicDescriptionEnglish = "";
+            this.topicForm.topicNameHindi = "";
+            this.topicForm.topicDescriptionHindi = "";
+            this.topicForm.topicNameMarathi = "";
+            this.topicForm.topicDescriptionMarathi = "";
           });
         });
     },

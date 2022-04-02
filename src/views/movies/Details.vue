@@ -108,8 +108,8 @@ export default {
       .then(({ data }) => {
         data.topics.forEach((element) => {
           if (element.id == this.topicId) {
-            this.description = element.description;
-            this.title = element.title;
+            this.title = element.local_data[0].title;
+            this.description = element.local_data[0].description;
           }
         });
       })
@@ -120,10 +120,10 @@ export default {
     axios
       .post("/admin/v1/movies/get-subject", { subject_id: this.subjectId })
       .then(({ data }) => {
-        this.breadcrumbs[1].text = data.subjects[0].name;
+        this.breadcrumbs[1].text = data.subjects[0].locale_data[0].title;
         data.subjects[0].levels.forEach((level) => {
           if (level.id == this.levelId) {
-            this.breadcrumbs[2].text = level.level + '';
+            this.breadcrumbs[2].text = level.level + "";
           }
         });
       })
@@ -134,7 +134,7 @@ export default {
     axios
       .post("/admin/v1/movies/get-topic", { topic_id: this.topicId })
       .then(({ data }) => {
-        this.breadcrumbs[3].text = data.topic[0].title;
+        this.breadcrumbs[3].text = data.topic[0].local_data[0].title;
       })
       .catch((resp) => {
         console.error(resp);
