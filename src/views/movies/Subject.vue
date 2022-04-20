@@ -433,9 +433,9 @@ export default {
     },
     setEditLevel(level) {
       this.levelName = level.level;
-      this.levelDescriptionEnglish = level.local_data[0].description || "";
-      this.levelDescriptionHindi = level.local_data[1].description || "";
-      this.levelDescriptionMarathi = level.local_data[2].description || "";
+      this.levelDescriptionEnglish = (level.local_data[0] && level.local_data[0].description) || "";
+      this.levelDescriptionHindi = (level.local_data[1] && level.local_data[1].description) || "";
+      this.levelDescriptionMarathi = (level.local_data[2] && level.local_data[2].description) || "";
       this.totalRewards = level.total_rewards;
       this.totalTopic = level.total_question;
       this.editLevel = true;

@@ -533,13 +533,13 @@ export default {
       this.$bvModal.show("add-topic-modal");
       this.topicForm.topicNameEnglish = topic.local_data[0].title || "";
       this.topicForm.topicDescriptionEnglish =
-        topic.local_data[0].description || "";
+        (topic.local_data[0] && topic.local_data[0].description) || "";
       this.topicForm.topicNameHindi = topic.local_data[1].title || "";
       this.topicForm.topicDescriptionHindi =
-        topic.local_data[1].description || "";
+        (topic.local_data[1] && topic.local_data[1].description) || "";
       this.topicForm.topicNameMarathi = topic.local_data[2].title || "";
       this.topicForm.topicDescriptionMarathi =
-        topic.local_data[2].description || "";
+        (topic.local_data[2] && topic.local_data[2].description) || "";
 
       document.getElementById(
         "previewImg"
