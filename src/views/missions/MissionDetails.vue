@@ -416,44 +416,48 @@ export default {
         { name: "Hindi", code: "hi" },
         { name: "Marathi", code: "mr" },
       ],
+      isQuestionDocumentUpdated: false,
     };
   },
   created() {
-    axios
-      .post("/admin/v1/missions/get-mission", { mission_id: this.missionId })
-      .then(({ data }) => {
-        this.mission = data.missions[0];
-        this.breadcrumbs[2].text = this.mission.name;
-        let images = [];
-        let length = this.mission.mission_images.length;
-        for (let i = 0; i < length; i++) {
-          images.push({ img: null, name: "" });
-        }
-        this.mission.mission_images.forEach((item, i) => {
-          images[i].id = item.id;
-          images[i].img = item.mission_media_id.url;
-          images[i].name = item.mission_media_id.name;
-        });
-        let missionForm = {
-          SelectedMissionType: this.mission.type,
-          missionName: this.mission.name,
-          brainCoins: this.mission.brain_point,
-          heartCoins: this.mission.heart_point,
-          question: this.mission.question[0].question_title,
-          images: images,
-          document: {
-            file: this.mission.question[0].media.url,
-            name: this.mission.question[0].media.name,
-          },
-        };
-        this.missionForm = missionForm;
-        this.locale = this.mission.question[0].locale;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    this.getMission();
   },
   methods: {
+    getMission() {
+      axios
+        .post("/admin/v1/missions/get-mission", { mission_id: this.missionId })
+        .then(({ data }) => {
+          this.mission = data.missions[0];
+          this.breadcrumbs[2].text = this.mission.name;
+          let images = [];
+          let length = this.mission.mission_images.length;
+          for (let i = 0; i < length; i++) {
+            images.push({ img: null, name: "" });
+          }
+          this.mission.mission_images.forEach((item, i) => {
+            images[i].id = item.id;
+            images[i].img = item.mission_media_id.url;
+            images[i].name = item.mission_media_id.name;
+          });
+          let missionForm = {
+            SelectedMissionType: this.mission.type,
+            missionName: this.mission.name,
+            brainCoins: this.mission.brain_point,
+            heartCoins: this.mission.heart_point,
+            question: this.mission.question[0].question_title,
+            images: images,
+            document: {
+              file: this.mission.question[0].media.url,
+              name: this.mission.question[0].media.name,
+            },
+          };
+          this.missionForm = missionForm;
+          this.locale = this.mission.question[0].locale;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     onSubmit() {
       var postData = new FormData();
       postData.append("mission_name", this.missionForm.missionName);
@@ -463,7 +467,8 @@ export default {
       postData.append("mission_type", this.missionForm.SelectedMissionType);
       postData.append("mission_id", this.missionId);
       postData.append("question_title", this.missionForm.question);
-      postData.append("question_document", this.missionForm.document.file);
+      if (this.isQuestionDocumentUpdated)
+        postData.append("question_document", this.missionForm.document.file);
       this.missionForm.images.forEach((element, i) => {
         postData.append(`image[${i}]`, element.img);
       });
@@ -472,6 +477,21 @@ export default {
       }
 
       // mission PUT API here
+      axios
+        .post(`/admin/v1/missions/update-mission?_method=PUT`, postData)
+        .then((data) => {
+          this.isQuestionDocumentUpdated = false
+          this.isEditable = false
+          this.getMission();
+        })
+        .catch((error) => {
+          console.error(error);
+          this.$swal({
+            title: "Some error occurred",
+            text: "Please try again",
+            icon: "error",
+          });
+        });
     },
     onImageSelected(e, index) {
       let self = this;
@@ -534,6 +554,7 @@ export default {
         reader.readAsDataURL(e.target.files[0]);
         self.missionForm.document.file = e.target.files[0];
         self.missionForm.document.name = name;
+        self.isQuestionDocumentUpdated = true;
         self.documentNameKey++;
       }
     },

@@ -1610,7 +1610,7 @@ export default {
             .post("/admin/v1/movies/create-movie", movieFormData)
             .then(({ data }) => {
               this.movieId = data.data;
-              this.$swal.close()
+              this.$swal.close();
               this.$swal({
                 title: "Movie Data Uploaded!",
                 icon: "success",
@@ -1653,11 +1653,17 @@ export default {
               Object.values(this.langs[index].movieForm)[i]
             );
           }
-
+          this.$swal({
+            title: "Data uploading. Please wait",
+            didOpen: () => {
+              this.$swal.showLoading();
+            },
+          });
           axios
             .post("/admin/v1/movies/update-movie?_method=PUT", movieFormData)
             .then(({ data }) => {
               this.movieId = data.data;
+              this.$swal.close();
               this.$swal({
                 title: "Movie Data Updated!",
                 icon: "success",
@@ -1909,11 +1915,17 @@ export default {
         postQuizData.append(`options[${i}][image]`, opt.image);
         postQuizData.append(`options[${i}][check]`, opt.isCorrect ? 1 : 0);
       });
-
+      this.$swal({
+        title: "Data uploading. Please wait",
+        didOpen: () => {
+          this.$swal.showLoading();
+        },
+      });
       axios
         .post("/admin/v1/movies/add-question", postQuizData)
         .then(({ data }) => {
           this.getQuizData(this.langs[index].movieId, index);
+          this.$swal.close();
           this.$swal({
             title: "Question Added",
             icon: "success",
@@ -2100,11 +2112,17 @@ export default {
         }
         postQuizData.append(`options[${i}][check]`, opt.isCorrect ? 1 : 0);
       });
-
+      this.$swal({
+        title: "Data uploading. Please wait",
+        didOpen: () => {
+          this.$swal.showLoading();
+        },
+      });
       axios
         .post("/admin/v1/movies/update-question?_method=PUT", postQuizData)
         .then(({ data }) => {
           this.getQuizData(this.langs[index].movieId, index);
+          this.$swal.close();
           this.$swal({
             title: "Question Updated",
             icon: "success",
