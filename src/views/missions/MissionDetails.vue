@@ -143,9 +143,9 @@
                 <b-form-radio
                   v-for="(lang, langIndex) in langs"
                   :key="langIndex"
-                  v-model="locale"
                   :name="lang.name"
-                  :value="lang.code"
+                  :value="lang.code.toLowerCase()"
+                  v-model="locale"
                   class="custom-control-primary"
                   :disabled="!isEditable"
                 >
@@ -412,11 +412,12 @@ export default {
       imageNameKey: 0,
       documentNameKey: 0,
       langs: [
-        { name: "English", code: "en" },
-        { name: "Hindi", code: "hi" },
-        { name: "Marathi", code: "mr" },
+        { name: "English", code: "En" },
+        { name: "Hindi", code: "Hi" },
+        { name: "Marathi", code: "Mr" },
       ],
       isQuestionDocumentUpdated: false,
+      areImagesUpdated: false,
     };
   },
   created() {
@@ -452,7 +453,7 @@ export default {
             },
           };
           this.missionForm = missionForm;
-          this.locale = this.mission.question[0].locale;
+          this.locale = this.mission.question[0].locale.toLowerCase();
         })
         .catch((error) => {
           console.log(error);
@@ -469,6 +470,7 @@ export default {
       postData.append("question_title", this.missionForm.question);
       if (this.isQuestionDocumentUpdated)
         postData.append("question_document", this.missionForm.document.file);
+      if (this.areImagesUpdated)
       this.missionForm.images.forEach((element, i) => {
         postData.append(`image[${i}]`, element.img);
       });
@@ -481,6 +483,7 @@ export default {
         .post(`/admin/v1/missions/update-mission?_method=PUT`, postData)
         .then((data) => {
           this.isQuestionDocumentUpdated = false
+          this.areImagesUpdated = false
           this.isEditable = false
           this.getMission();
         })
@@ -501,7 +504,7 @@ export default {
         reader.readAsDataURL(e.target.files[0]);
         self.missionForm.images[index].img = e.target.files[0];
         self.missionForm.images[index].name = name;
-
+        self.areImagesUpdated = true
         self.imageNameKey++;
       }
     },
