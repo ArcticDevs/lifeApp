@@ -2119,7 +2119,7 @@ export default {
         },
       });
       axios
-        .post("/admin/v1/movies/update-question?_method=PUT", postQuizData)
+        .post("/admin/v1/movies/update-question?_method=POST", postQuizData)
         .then(({ data }) => {
           this.getQuizData(this.langs[index].movieId, index);
           this.$swal.close();

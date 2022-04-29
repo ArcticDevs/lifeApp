@@ -160,7 +160,7 @@
                   <b-col cols="12" md="8" class="mb-2 mr-md-3">
                     <label>Images</label>
                     <b-form-group
-                      v-for="(image, index) in missionForm.images"
+                      v-for="(image, index) in images"
                       :key="index"
                       :disabled="!isEditable"
                     >
@@ -189,7 +189,7 @@
                           </p>
                           <!--          Remove Svg Icon-->
                           <svg
-                            v-show="missionForm.images.length > 1 && isEditable"
+                            v-show="images.length > 1 && isEditable"
                             @click="removeImage(index)"
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -203,30 +203,12 @@
                               d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
                             />
                           </svg>
-
-                          <!-- image removed toast::begin -->
-                          <b-toast
-                            id="image-delete-toast"
-                            variant="info"
-                            auto-hide-delay="2000"
-                            solid
-                          >
-                            <template #toast-title>
-                              <div
-                                class="d-flex flex-grow-1 align-items-baseline"
-                              >
-                                <strong class="mr-auto">Image removed</strong>
-                              </div>
-                            </template>
-                            One image was removed from mission
-                          </b-toast>
-                          <!-- image removed toast::end -->
                         </div>
 
                         <!-- Add button -->
                         <b-button
                           variant="primary"
-                          v-show="index === missionForm.images.length - 1"
+                          v-show="index === images.length - 1"
                           @click="addImage"
                         >
                           Add
@@ -236,6 +218,22 @@
                   </b-col>
                 </b-form-row>
 
+                <!-- image removed toast::begin -->
+                <b-toast
+                  id="image-delete-toast"
+                  variant="info"
+                  auto-hide-delay="2000"
+                  solid
+                >
+                  <template #toast-title>
+                    <div class="d-flex flex-grow-1 align-items-baseline">
+                      <strong class="mr-auto">Image removed</strong>
+                    </div>
+                  </template>
+                  One image was removed from mission
+                </b-toast>
+                <!-- image removed toast::end -->
+                
                 <!-- Question -->
                 <b-col md="12" class="mb-2">
                   <label for="question">Question:</label>
@@ -405,6 +403,8 @@ export default {
         images: [{}],
         document: { file: null, name: "" },
       },
+      images: [{}],
+      index: 0,
       locale: "en",
       required,
       email,
@@ -440,13 +440,14 @@ export default {
             images[i].img = item.mission_media_id.url;
             images[i].name = item.mission_media_id.name;
           });
+          this.images = images;
           let missionForm = {
             SelectedMissionType: this.mission.type,
             missionName: this.mission.name,
             brainCoins: this.mission.brain_point,
             heartCoins: this.mission.heart_point,
             question: this.mission.question[0].question_title,
-            images: images,
+            images: [],
             document: {
               file: this.mission.question[0].media.url,
               name: this.mission.question[0].media.name,
@@ -471,20 +472,20 @@ export default {
       if (this.isQuestionDocumentUpdated)
         postData.append("question_document", this.missionForm.document.file);
       if (this.areImagesUpdated)
-      this.missionForm.images.forEach((element, i) => {
-        postData.append(`image[${i}]`, element.img);
-      });
-      for (var pair of postData.entries()) {
-        console.log(pair[0] + " -> " + pair[1]);
-      }
+        this.missionForm.images.forEach((element, i) => {
+          postData.append(`image[${i}]`, element.img);
+        });
+      // for (var pair of postData.entries()) {
+      //   console.log(pair[0] + " -> " + pair[1]);
+      // }
 
-      // mission PUT API here
+      // mission update API here
       axios
-        .post(`/admin/v1/missions/update-mission?_method=PUT`, postData)
+        .post(`/admin/v1/missions/update-mission?_method=POST`, postData)
         .then((data) => {
-          this.isQuestionDocumentUpdated = false
-          this.areImagesUpdated = false
-          this.isEditable = false
+          this.isQuestionDocumentUpdated = false;
+          this.areImagesUpdated = false;
+          this.isEditable = false;
           this.getMission();
         })
         .catch((error) => {
@@ -502,14 +503,18 @@ export default {
         let name = e.target.files[0].name;
         var reader = new FileReader();
         reader.readAsDataURL(e.target.files[0]);
-        self.missionForm.images[index].img = e.target.files[0];
-        self.missionForm.images[index].name = name;
-        self.areImagesUpdated = true
+        self.missionForm.images[self.index].img = e.target.files[0];
+        self.missionForm.images[self.index].name = name;
+        self.index++;
+        self.images[index].img = e.target.files[0];
+        self.images[index].name = name;
+        self.areImagesUpdated = true;
         self.imageNameKey++;
       }
     },
     addImage() {
       this.missionForm.images.push({});
+      this.images.push({});
     },
     removeImage(index) {
       this.$swal({
@@ -525,27 +530,34 @@ export default {
         confirmButtonText: "Yes, delete it!",
       }).then((result) => {
         if (result.isConfirmed) {
-          console.log(this.missionForm.images);
-          let imageId = this.missionForm.images[index].id;
-          axios
-            .get(`/admin/v1/missions/mission-image/delete/${imageId}`)
-            .then(({ data }) => {
-              this.$bvToast.show("image-delete-toast");
-              if (this.missionForm.images.length === 1) {
-                this.missionForm.images = [{}];
-              } else {
-                this.missionForm.images.splice(index, 1);
-              }
-              this.imageNameKey++;
-            })
-            .catch((resp) => {
-              console.error(resp);
-              this.$swal(
-                "Error!",
-                "Some error occurred. Please try again",
-                "error"
-              );
-            });
+          // console.log(this.missionForm.images);
+          let imageId = this.images[index].id;
+          if (imageId) {
+            axios
+              .get(`/admin/v1/missions/mission-image/delete/${imageId}`)
+              .then(({ data }) => {
+                this.$bvToast.show("image-delete-toast");
+                if (this.images.length === 1) {
+                  this.missionForm.images = [{}];
+                  this.images = [{}];
+                } else {
+                  // this.missionForm.images.splice(index, 1);
+                  this.images.splice(index, 1);
+                }
+                this.imageNameKey++;
+              })
+              .catch((resp) => {
+                console.error(resp);
+                this.$swal(
+                  "Error!",
+                  "Some error occurred. Please try again",
+                  "error"
+                );
+              });
+          } else {
+            this.missionForm.images.splice(index, 1);
+            this.images.splice(index, 1);
+          }
         }
       });
     },
@@ -562,7 +574,37 @@ export default {
       }
     },
     removeDocument() {
-      this.missionForm.document = { file: null, name: "" };
+      this.$swal({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        customClass: {
+          confirmButton: "mr-2",
+        },
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const mission_id = this.mission.question[0].mission_id;
+          const media_id = this.mission.question[0].media.id;
+          axios
+            .patch(
+              `/admin/v1/missions/${mission_id}/question-documents/${media_id}`
+            )
+            .then((data) => {
+              this.missionForm.document = { file: null, name: "" };
+            })
+            .catch((err) => {
+              this.$swal(
+                "Error!",
+                "Some error occurred. Please try again",
+                "error"
+              );
+            });
+        }
+      });
     },
     deleteMission() {
       let self = this;
