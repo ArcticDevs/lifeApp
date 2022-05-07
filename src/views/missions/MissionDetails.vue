@@ -5,7 +5,15 @@
       <div class="row m-0">
         <div class="col-12 col-sm-8 col-md-9">
           <h2 class="subName">
-            {{ mission.name[0].toUpperCase() + mission.name.slice(1) }}
+            {{
+              mission.translations.hasOwnProperty("En")
+                ? mission.translations.En.name
+                : mission.translations.hasOwnProperty("Hi")
+                ? mission.translations.Hi.name
+                : mission.translations.hasOwnProperty("Mr")
+                ? mission.translations.Mr.name
+                : ""
+            }}
           </h2>
         </div>
         <div
@@ -80,25 +88,6 @@
               </b-form-radio>
             </div>
 
-            <!-- Mission name input -->
-            <b-col md="12" class="mb-2">
-              <label for="missionName">Mission Name:</label>
-              <validation-provider
-                #default="{ errors }"
-                name="Mission Name"
-                rules="required"
-              >
-                <b-form-input
-                  id="missionName"
-                  v-model="missionForm.missionName"
-                  :state="errors.length > 0 ? false : null"
-                  placeholder="Mission Name"
-                  :disabled="!isEditable"
-                />
-                <small class="text-danger">{{ errors[0] }}</small>
-              </validation-provider>
-            </b-col>
-
             <!-- coins allotment -->
             <b-col md="12" class="mb-2">
               <label for="coins">Coins Allotment:</label>
@@ -139,7 +128,7 @@
             </b-col>
 
             <div class="w-100 mt-3">
-              <div class="demo-inline-spacing mb-2">
+              <!-- <div class="demo-inline-spacing mb-2">
                 <b-form-radio
                   v-for="(lang, langIndex) in langs"
                   :key="langIndex"
@@ -151,161 +140,196 @@
                 >
                   {{ lang.name }}
                 </b-form-radio>
-              </div>
-              <b-card-text>
-                <!-- images -->
-                <b-form-row
-                  class="w-100 d-flex justify-content-center align-items-center"
+              </div> -->
+              <b-tabs>
+                <b-tab
+                  v-for="(lang, langIndex) in langs"
+                  :key="langIndex"
+                  :title="lang.name"
                 >
-                  <b-col cols="12" md="8" class="mb-2 mr-md-3">
-                    <label>Images</label>
-                    <b-form-group
-                      v-for="(image, index) in images"
-                      :key="index"
-                      :disabled="!isEditable"
-                    >
-                      <div class="d-flex align-items-center">
-                        <!-- image upload container -->
-                        <div class="fileUploadContainer mb-1 mr-2">
-                          <div class="text-center">
-                            <img
-                              src="@/assets/images/svg/file-upload.svg"
-                              alt="file upload"
-                            />
-                            <span class="d-block">Click to upload </span>
-                          </div>
-                          <b-form-file
-                            accept="image/*"
-                            @change="onImageSelected($event, index, locale)"
-                            :id="'prodImg' + index"
-                          ></b-form-file>
-                          <!-- <img src="" alt="" :id="'previewImg'+index" class="previewImg" /> -->
-                          <p
-                            :id="'previewImgName' + index"
-                            class="m-0 previewImgName"
-                            :key="imageNameKey"
-                          >
-                            {{ image.name }}
-                          </p>
-                          <!--          Remove Svg Icon-->
-                          <svg
-                            v-show="images.length > 1 && isEditable"
-                            @click="removeImage(index)"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            height="24"
-                            class="ml-2 cursor-pointer removeImg"
-                          >
-                            <path fill="none" d="M0 0h24v24H0z" />
-                            <path
-                              fill="#EC4899"
-                              d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
-                            />
-                          </svg>
-                        </div>
-
-                        <!-- Add button -->
-                        <b-button
-                          variant="primary"
-                          v-show="index === images.length - 1"
-                          @click="addImage"
-                        >
-                          Add
-                        </b-button>
-                      </div>
-                    </b-form-group>
-                  </b-col>
-                </b-form-row>
-
-                <!-- image removed toast::begin -->
-                <b-toast
-                  id="image-delete-toast"
-                  variant="info"
-                  auto-hide-delay="2000"
-                  solid
-                >
-                  <template #toast-title>
-                    <div class="d-flex flex-grow-1 align-items-baseline">
-                      <strong class="mr-auto">Image removed</strong>
-                    </div>
-                  </template>
-                  One image was removed from mission
-                </b-toast>
-                <!-- image removed toast::end -->
-                
-                <!-- Question -->
-                <b-col md="12" class="mb-2">
-                  <label for="question">Question:</label>
-                  <validation-provider
-                    #default="{ errors }"
-                    name="Question"
-                    rules="required"
-                  >
-                    <b-form-input
-                      id="question"
-                      v-model="missionForm.question"
-                      :state="errors.length > 0 ? false : null"
-                      placeholder="Question"
-                      :disabled="!isEditable"
-                    />
-                    <small class="text-danger">{{ errors[0] }}</small>
-                  </validation-provider>
-                </b-col>
-
-                <!-- Upload document -->
-                <b-form-row
-                  class="w-100 d-flex justify-content-center align-items-center"
-                >
-                  <b-col cols="12" md="8" class="mb-2 mr-md-3">
-                    <label>Upload Document</label>
-
-                    <div class="d-flex align-items-center">
-                      <div class="fileUploadContainer mb-1 mr-2">
-                        <div class="text-center">
-                          <img
-                            src="@/assets/images/svg/file-upload.svg"
-                            alt="file upload"
-                          />
-                          <span class="d-block">Click to upload document</span>
-                        </div>
-                        <b-form-file
-                          @change="onDocumentSelected($event)"
-                          id="document"
+                  <b-card-text>
+                    <!-- Mission name input -->
+                    <b-col md="12" class="mb-2">
+                      <label for="missionName">Mission Name:</label>
+                      <validation-provider
+                        #default="{ errors }"
+                        name="Mission Name"
+                        rules="required"
+                      >
+                        <b-form-input
+                          v-model="lang.missionName"
+                          :state="errors.length > 0 ? false : null"
+                          placeholder="Mission Name"
                           :disabled="!isEditable"
-                        ></b-form-file>
-                        <!-- <img src="" alt="" :id="'previewImg'+index" class="previewImg" /> -->
-                        <p
-                          id="documentName"
-                          class="m-0 previewImgName"
-                          :key="documentNameKey"
+                        />
+                        <small class="text-danger">{{ errors[0] }}</small>
+                      </validation-provider>
+                    </b-col>
+
+                    <!-- images -->
+                    <b-form-row
+                      class="
+                        w-100
+                        d-flex
+                        justify-content-center
+                        align-items-center
+                      "
+                    >
+                      <b-col cols="12" md="8" class="mb-2 mr-md-3">
+                        <label>Images</label>
+                        <b-form-group
+                          v-for="(image, index) in lang.images"
+                          :key="index"
+                          :disabled="!isEditable"
                         >
-                          {{ missionForm.document.name }}
-                        </p>
-                        <!--          Remove Svg Icon-->
-                        <svg
-                          v-show="
-                            missionForm.document.file != null && isEditable
-                          "
-                          @click="removeDocument()"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          height="24"
-                          class="ml-2 cursor-pointer removeImg"
-                        >
-                          <path fill="none" d="M0 0h24v24H0z" />
-                          <path
-                            fill="#EC4899"
-                            d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  </b-col>
-                </b-form-row>
-              </b-card-text>
+                          <div class="d-flex align-items-center">
+                            <!-- image upload container -->
+                            <div class="fileUploadContainer mb-1 mr-2">
+                              <div class="text-center">
+                                <img
+                                  src="@/assets/images/svg/file-upload.svg"
+                                  alt="file upload"
+                                />
+                                <span class="d-block">Click to upload </span>
+                              </div>
+                              <b-form-file
+                                accept="image/*"
+                                @change="
+                                  onImageSelected($event, langIndex, index)
+                                "
+                                :id="'prodImg' + langIndex + index"
+                              ></b-form-file>
+                              <!-- <img src="" alt="" :id="'previewImg'+index" class="previewImg" /> -->
+                              <p
+                                :id="'previewImgName' + langIndex + index"
+                                class="m-0 previewImgName"
+                                :key="imageNameKey"
+                              >
+                                {{ image.name }}
+                              </p>
+                              <!--          Remove Svg Icon-->
+                              <svg
+                                v-show="lang.images.length > 1 && isEditable"
+                                @click="removeImage(index)"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                height="24"
+                                class="ml-2 cursor-pointer removeImg"
+                              >
+                                <path fill="none" d="M0 0h24v24H0z" />
+                                <path
+                                  fill="#EC4899"
+                                  d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
+                                />
+                              </svg>
+                            </div>
+
+                            <!-- Add button -->
+                            <b-button
+                              variant="primary"
+                              v-show="index === lang.images.length - 1"
+                              @click="addImage(langIndex)"
+                            >
+                              Add
+                            </b-button>
+                          </div>
+                        </b-form-group>
+                      </b-col>
+                    </b-form-row>
+
+                    <!-- Question -->
+                    <b-col md="12" class="mb-2">
+                      <label for="question">Question:</label>
+                      <validation-provider
+                        #default="{ errors }"
+                        name="Question"
+                        rules="required"
+                      >
+                        <b-form-input
+                          v-model="lang.question"
+                          :state="errors.length > 0 ? false : null"
+                          placeholder="Question"
+                          :disabled="!isEditable"
+                        />
+                        <small class="text-danger">{{ errors[0] }}</small>
+                      </validation-provider>
+                    </b-col>
+
+                    <!-- Upload document -->
+                    <b-form-row
+                      class="
+                        w-100
+                        d-flex
+                        justify-content-center
+                        align-items-center
+                      "
+                    >
+                      <b-col cols="12" md="8" class="mb-2 mr-md-3">
+                        <label>Upload Document</label>
+
+                        <div class="d-flex align-items-center">
+                          <div class="fileUploadContainer mb-1 mr-2">
+                            <div class="text-center">
+                              <img
+                                src="@/assets/images/svg/file-upload.svg"
+                                alt="file upload"
+                              />
+                              <span class="d-block"
+                                >Click to upload document</span
+                              >
+                            </div>
+                            <b-form-file
+                              @change="onDocumentSelected($event, langIndex)"
+                              :disabled="!isEditable"
+                            ></b-form-file>
+                            <!-- <img src="" alt="" :id="'previewImg'+index" class="previewImg" /> -->
+                            <p
+                              class="m-0 previewImgName"
+                              :key="documentNameKey"
+                            >
+                              {{ lang.document.name }}
+                            </p>
+                            <!--          Remove Svg Icon-->
+                            <svg
+                              v-show="lang.document.file != null && isEditable"
+                              @click="removeDocument(langIndex)"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              height="24"
+                              class="ml-2 cursor-pointer removeImg"
+                            >
+                              <path fill="none" d="M0 0h24v24H0z" />
+                              <path
+                                fill="#EC4899"
+                                d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9.414l2.828-2.829 1.415 1.415L13.414 12l2.829 2.828-1.415 1.415L12 13.414l-2.828 2.829-1.415-1.415L10.586 12 7.757 9.172l1.415-1.415L12 10.586z"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </b-col>
+                    </b-form-row>
+                  </b-card-text>
+                </b-tab>
+              </b-tabs>
             </div>
+
+            <!-- image removed toast::begin -->
+            <b-toast
+              id="image-delete-toast"
+              variant="info"
+              auto-hide-delay="2000"
+              solid
+            >
+              <template #toast-title>
+                <div class="d-flex flex-grow-1 align-items-baseline">
+                  <strong class="mr-auto">Image removed</strong>
+                </div>
+              </template>
+              One image was removed from mission
+            </b-toast>
+            <!-- image removed toast::end -->
 
             <b-col cols="12" md="10" v-if="isEditable">
               <div class="text-center">
@@ -396,28 +420,54 @@ export default {
       ],
       missionForm: {
         SelectedMissionType: "brain",
-        missionName: "",
         brainCoins: "",
         heartCoins: "",
-        question: "",
-        images: [{}],
-        document: { file: null, name: "" },
       },
       images: [{}],
-      index: 0,
-      locale: "en",
+      // index: 0,
+      // locale: "en",
       required,
       email,
       integer,
       imageNameKey: 0,
       documentNameKey: 0,
       langs: [
-        { name: "English", code: "En" },
-        { name: "Hindi", code: "Hi" },
-        { name: "Marathi", code: "Mr" },
+        {
+          name: "English",
+          code: "En",
+          missionName: "",
+          question: "",
+          images: [{}],
+          document: { file: null, name: "" },
+          isQuestionDocumentUpdated: false,
+          areImagesUpdated: false,
+          newImages: [{}],
+        },
+        {
+          name: "Hindi",
+          code: "Hi",
+          missionName: "",
+          question: "",
+          images: [{}],
+          document: { file: null, name: "" },
+          isQuestionDocumentUpdated: false,
+          areImagesUpdated: false,
+          newImages: [{}],
+        },
+        {
+          name: "Marathi",
+          code: "Mr",
+          missionName: "",
+          question: "",
+          images: [{}],
+          document: { file: null, name: "" },
+          isQuestionDocumentUpdated: false,
+          areImagesUpdated: false,
+          newImages: [{}],
+        },
       ],
-      isQuestionDocumentUpdated: false,
-      areImagesUpdated: false,
+      // isQuestionDocumentUpdated: false,
+      // areImagesUpdated: false,
     };
   },
   created() {
@@ -426,35 +476,87 @@ export default {
   methods: {
     getMission() {
       axios
-        .post("/admin/v1/missions/get-mission", { mission_id: this.missionId })
+        .get(`/admin/v1/missions/${this.missionId}`)
         .then(({ data }) => {
-          this.mission = data.missions[0];
-          this.breadcrumbs[2].text = this.mission.name;
-          let images = [];
-          let length = this.mission.mission_images.length;
-          for (let i = 0; i < length; i++) {
-            images.push({ img: null, name: "" });
+          // console.log(data);
+          this.mission = data.mission;
+          if (this.mission.translations.hasOwnProperty("Mr")) {
+            this.breadcrumbs[2].text = this.mission.translations.Mr.name;
+
+            this.langs[2].missionName = this.mission.translations.Mr.name;
+            this.langs[2].question =
+              this.mission.translations.Mr.question.title;
+            this.langs[2].document.file =
+              this.mission.translations.Mr.question.media.url;
+            this.langs[2].document.name =
+              this.mission.translations.Mr.question.media.name;
+
+            let images = [];
+            let length = this.mission.translations.Mr.images.length;
+            for (let i = 0; i < length; i++) {
+              images.push({ img: null, name: "" });
+            }
+            this.mission.translations.Mr.images.forEach((item, i) => {
+              images[i].id = item.id;
+              images[i].img = item.media.url;
+              images[i].name = item.media.name;
+            });
+            this.langs[2].images = images;
           }
-          this.mission.mission_images.forEach((item, i) => {
-            images[i].id = item.id;
-            images[i].img = item.mission_media_id.url;
-            images[i].name = item.mission_media_id.name;
-          });
-          this.images = images;
+          if (this.mission.translations.hasOwnProperty("Hi")) {
+            this.breadcrumbs[2].text = this.mission.translations.Hi.name;
+
+            this.langs[1].missionName = this.mission.translations.Hi.name;
+            this.langs[1].question =
+              this.mission.translations.Hi.question.title;
+            this.langs[1].document.file =
+              this.mission.translations.Hi.question.media.url;
+            this.langs[1].document.name =
+              this.mission.translations.Hi.question.media.name;
+
+            let images = [];
+            let length = this.mission.translations.Hi.images.length;
+            for (let i = 0; i < length; i++) {
+              images.push({ img: null, name: "" });
+            }
+            this.mission.translations.Hi.images.forEach((item, i) => {
+              images[i].id = item.id;
+              images[i].img = item.media.url;
+              images[i].name = item.media.name;
+            });
+            this.langs[1].images = images;
+          }
+          if (this.mission.translations.hasOwnProperty("En")) {
+            this.breadcrumbs[2].text = this.mission.translations.En.name;
+
+            this.langs[0].missionName = this.mission.translations.En.name;
+            this.langs[0].question =
+              this.mission.translations.En.question.title;
+            this.langs[0].document.file =
+              this.mission.translations.En.question.media.url;
+            this.langs[0].document.name =
+              this.mission.translations.En.question.media.name;
+
+            let images = [];
+            let length = this.mission.translations.En.images.length;
+            for (let i = 0; i < length; i++) {
+              images.push({ img: null, name: "" });
+            }
+            this.mission.translations.En.images.forEach((item, i) => {
+              images[i].id = item.id;
+              images[i].img = item.media.url;
+              images[i].name = item.media.name;
+            });
+            this.langs[0].images = images;
+          }
+
           let missionForm = {
             SelectedMissionType: this.mission.type,
-            missionName: this.mission.name,
             brainCoins: this.mission.brain_point,
             heartCoins: this.mission.heart_point,
-            question: this.mission.question[0].question_title,
-            images: [],
-            document: {
-              file: this.mission.question[0].media.url,
-              name: this.mission.question[0].media.name,
-            },
           };
           this.missionForm = missionForm;
-          this.locale = this.mission.question[0].locale.toLowerCase();
+          // this.locale = this.mission.question[0].locale.toLowerCase();
         })
         .catch((error) => {
           console.log(error);
@@ -462,30 +564,46 @@ export default {
     },
     onSubmit() {
       var postData = new FormData();
-      postData.append("mission_name", this.missionForm.missionName);
       postData.append("brain_points", this.missionForm.brainCoins);
       postData.append("heart_points", this.missionForm.heartCoins);
-      postData.append("locale", this.locale);
       postData.append("mission_type", this.missionForm.SelectedMissionType);
-      postData.append("mission_id", this.missionId);
-      postData.append("question_title", this.missionForm.question);
-      if (this.isQuestionDocumentUpdated)
-        postData.append("question_document", this.missionForm.document.file);
-      if (this.areImagesUpdated)
-        this.missionForm.images.forEach((element, i) => {
-          postData.append(`image[${i}]`, element.img);
-        });
+
+      this.langs.forEach((lang) => {
+        if (lang.missionName != "") {
+          postData.append(
+            `translations[${lang.code}][question][title]`,
+            lang.question
+          );
+          if (lang.isQuestionDocumentUpdated) {
+            postData.append(
+              `translations[${lang.code}][question][document]`,
+              lang.document.file
+            );
+          }
+          postData.append(`translations[${lang.code}][name]`, lang.missionName);
+          lang.newImages.forEach((image, i) => {
+            if (image.img)
+              postData.append(
+                `translations[${lang.code}][images][]`,
+                image.img
+              );
+          });
+        }
+      });
+
       // for (var pair of postData.entries()) {
       //   console.log(pair[0] + " -> " + pair[1]);
       // }
 
       // mission update API here
       axios
-        .post(`/admin/v1/missions/update-mission?_method=POST`, postData)
+        .put(`/admin/v1/missions/${this.missionId}`, postData)
         .then((data) => {
-          this.isQuestionDocumentUpdated = false;
-          this.areImagesUpdated = false;
           this.isEditable = false;
+          this.langs.forEach((lang) => {
+            lang.isQuestionDocumentUpdated = false;
+            lang.areImagesUpdated = false;
+          });
           this.getMission();
         })
         .catch((error) => {
@@ -497,26 +615,29 @@ export default {
           });
         });
     },
-    onImageSelected(e, index) {
+    onImageSelected(e, langIndex, index) {
       let self = this;
       if (e.target.files && e.target.files[0]) {
         let name = e.target.files[0].name;
         var reader = new FileReader();
         reader.readAsDataURL(e.target.files[0]);
-        self.missionForm.images[self.index].img = e.target.files[0];
-        self.missionForm.images[self.index].name = name;
-        self.index++;
-        self.images[index].img = e.target.files[0];
-        self.images[index].name = name;
-        self.areImagesUpdated = true;
+        let imgData = {
+          img: e.target.files[0],
+          name: name,
+        };
+        self.langs[langIndex].newImages.push(imgData);
+        self.langs[langIndex].images[index].img = e.target.files[0];
+        self.langs[langIndex].images[index].name = name;
+        self.langs[langIndex].areImagesUpdated = true;
         self.imageNameKey++;
+        e.target.value = "";
       }
     },
-    addImage() {
-      this.missionForm.images.push({});
-      this.images.push({});
+    addImage(langIndex) {
+      this.langs[langIndex].images.push({});
+      this.langs[langIndex].newImages.push({});
     },
-    removeImage(index) {
+    removeImage(langIndex, index) {
       this.$swal({
         title: "Are you sure?",
         text: "You won't be able to revert this!",
@@ -531,18 +652,18 @@ export default {
       }).then((result) => {
         if (result.isConfirmed) {
           // console.log(this.missionForm.images);
-          let imageId = this.images[index].id;
+          let imageId = this.langs[langIndex].images[index].id;
           if (imageId) {
             axios
-              .get(`/admin/v1/missions/mission-image/delete/${imageId}`)
+              .get(`/admin/v1/mission-images/${imageId}`)
               .then(({ data }) => {
                 this.$bvToast.show("image-delete-toast");
                 if (this.images.length === 1) {
-                  this.missionForm.images = [{}];
-                  this.images = [{}];
+                  this.langs[langIndex].images = [{}];
+                  this.langs[langIndex].newImages = [{}];
                 } else {
                   // this.missionForm.images.splice(index, 1);
-                  this.images.splice(index, 1);
+                  this.langs[langIndex].newImages.splice(index, 1);
                 }
                 this.imageNameKey++;
               })
@@ -555,25 +676,26 @@ export default {
                 );
               });
           } else {
-            this.missionForm.images.splice(index, 1);
-            this.images.splice(index, 1);
+            this.langs[langIndex].images.splice(index, 1);
+            this.langs[langIndex].newImages.splice(index, 1);
           }
         }
       });
     },
-    onDocumentSelected(e) {
+    onDocumentSelected(e, langIndex) {
       let self = this;
       if (e.target.files && e.target.files[0]) {
         let name = e.target.files[0].name;
         var reader = new FileReader();
         reader.readAsDataURL(e.target.files[0]);
-        self.missionForm.document.file = e.target.files[0];
-        self.missionForm.document.name = name;
-        self.isQuestionDocumentUpdated = true;
+        self.langs[langIndex].document.file = e.target.files[0];
+        self.langs[langIndex].document.name = name;
+        self.langs[langIndex].isQuestionDocumentUpdated = true;
         self.documentNameKey++;
+        e.target.value = "";
       }
     },
-    removeDocument() {
+    removeDocument(langIndex) {
       this.$swal({
         title: "Are you sure?",
         text: "You won't be able to revert this!",
@@ -587,14 +709,15 @@ export default {
         confirmButtonText: "Yes, delete it!",
       }).then((result) => {
         if (result.isConfirmed) {
-          const mission_id = this.mission.question[0].mission_id;
-          const media_id = this.mission.question[0].media.id;
+          const locale = this.langs[langIndex].code;
+          const mission_id = this.mission.id;
+          const media_id = this.mission.translations[locale].question.media.id;
           axios
             .patch(
               `/admin/v1/missions/${mission_id}/question-documents/${media_id}`
             )
             .then((data) => {
-              this.missionForm.document = { file: null, name: "" };
+              this.langs[langIndex].document = { file: null, name: "" };
             })
             .catch((err) => {
               this.$swal(

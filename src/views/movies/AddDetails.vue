@@ -449,16 +449,11 @@
                                             "
                                             type="file"
                                             accept="audio/*"
-                                            hidden
+                                            class="audioUpload"
                                           />
                                           <b-button
                                             variant="primary"
                                             class="addQuestionBtn px-0"
-                                            @click="
-                                              openAudioInput(
-                                                `editAudioUpload${langIndex}`
-                                              )
-                                            "
                                           >
                                             Add audio
                                           </b-button>
@@ -496,16 +491,11 @@
                                       "
                                       type="file"
                                       accept="image/*"
-                                      hidden
+                                      class="imageUpload"
                                     />
                                     <b-button
                                       variant="primary"
                                       class="addQuestionBtn px-0"
-                                      @click="
-                                        openImageInput(
-                                          `editQuestionImageUpload${langIndex}`
-                                        )
-                                      "
                                     >
                                       Add Image
                                     </b-button>
@@ -580,7 +570,7 @@
                                 </b-col>
                                 <!-- image upload :: start -->
                                 <b-col cols="1"></b-col>
-                                <b-col cols="11" md="6">
+                                <b-col cols="7" md="6">
                                   <div class="imageInputContainer">
                                     <b-form-group class="text-left">
                                       <b-form-input
@@ -620,6 +610,7 @@
                                     </b-button>
                                   </div>
                                 </b-col>
+                               
                                 <svg
                                   v-show="lang.quizEditForm.options.length > 0"
                                   @click="
@@ -758,6 +749,21 @@
                                   </div>
                                 </b-col>
                                 <!-- image upload :: End -->
+
+                                <b-col cols="12" md="5" class="text-center">
+                                  <img
+                                    :src="
+                                      'https://media.gappubobo.com/' +
+                                      question.question_media_id.url
+                                    "
+                                    alt=""
+                                    style="
+                                      height: 100px;
+                                      width: 100px;
+                                      object-fit: contain;
+                                    "
+                                  />
+                                </b-col>
                               </b-form-row>
 
                               <hr />
@@ -819,7 +825,7 @@
                                 </b-col>
                                 <!-- image upload :: start -->
                                 <b-col cols="1"></b-col>
-                                <b-col cols="11" md="6">
+                                <b-col cols="7" md="6">
                                   <div class="imageInputContainer">
                                     <b-form-group class="text-left">
                                       <b-form-input
@@ -842,6 +848,20 @@
                                       Add Image
                                     </b-button>
                                   </div>
+                                </b-col>
+                                <b-col cols="4" md="5" class="text-center">
+                                  <img
+                                    :src="
+                                      'https://media.gappubobo.com/' +
+                                      option.media.url
+                                    "
+                                    alt=""
+                                    style="
+                                      height: 100px;
+                                      width: 100px;
+                                      object-fit: contain;
+                                    "
+                                  />
                                 </b-col>
                               </b-form-row>
                             </div>
@@ -980,7 +1000,7 @@
                           </b-col>
 
                           <!-- image upload :: start -->
-                          <b-col cols="12" md="12" lg="7">
+                          <b-col cols="12" md="6" lg="7">
                             <div class="imageInputContainer">
                               <b-form-group class="text-left">
                                 <validation-provider
@@ -1023,6 +1043,17 @@
                             </div>
                           </b-col>
                           <!-- image upload :: End -->
+                          <b-col cols="12" md="6" lg="5" class="text-center">
+                            <img
+                              :id="'questionImagePreview' + langIndex"
+                              alt=""
+                              style="
+                                height: 100px;
+                                width: 100px;
+                                object-fit: contain;
+                              "
+                            />
+                          </b-col>
                         </b-form-row>
                         <hr />
 
@@ -1083,7 +1114,7 @@
                           </b-col>
                           <!-- image upload :: start -->
                           <b-col cols="1"></b-col>
-                          <b-col cols="11" md="6">
+                          <b-col cols="7" md="6">
                             <div class="imageInputContainer">
                               <b-form-group class="text-left">
                                 <validation-provider
@@ -1129,6 +1160,18 @@
                                 Add Image
                               </b-button>
                             </div>
+                          </b-col>
+                          <b-col cols="4" md="5" class="text-center">
+                            <img
+                              v-show="option.image"
+                              :id="'optionImage' + langIndex + optionIndex"
+                              alt=""
+                              style="
+                                height: 100px;
+                                width: 100px;
+                                object-fit: contain;
+                              "
+                            />
                           </b-col>
                           <svg
                             v-show="lang.quizForm.options.length > 0"
@@ -1325,7 +1368,6 @@ export default {
           },
           quizData: [],
           editQuiz: false,
-
           quizPoints: {
             brain_points: "",
             heart_points: "",
@@ -1369,7 +1411,6 @@ export default {
           },
           quizData: [],
           editQuiz: false,
-
           quizPoints: {
             brain_points: "",
             heart_points: "",
@@ -1764,36 +1805,44 @@ export default {
     },
     addImage(e, type, index, langIndex) {
       let self = this;
+      console.log(type);
       if (e.target.files && e.target.files[0]) {
         let name = e.target.files[0].name;
         var reader = new FileReader();
         reader.readAsDataURL(e.target.files[0]);
-        if (type === "option") {
-          self.langs[langIndex].quizForm.options[index].image =
-            e.target.files[0];
-          document.getElementById("optionImage" + index).value = name;
-        } else if (type === "edit") {
-          self.langs[langIndex].quizEditForm.questionImage.image =
-            e.target.files[0];
-          self.langs[langIndex].quizEditForm.questionImage.name = name;
-          self.langs[langIndex].quizEditForm.isQuestionImageUpdated = true;
-        } else if (type === "editOption") {
-          self.langs[langIndex].quizEditForm.options[index].image =
-            e.target.files[0];
-          document.getElementById("editOptionImage" + index).value = name;
-          self.langs[langIndex].quizEditForm.options[
-            index
-          ].isImageUpdated = true;
-        } else {
-          self.langs[langIndex].quizForm.questionImage.image =
-            e.target.files[0];
-          self.langs[langIndex].quizForm.questionImage.name = name;
-          self.langs[langIndex].quizEditForm.options[
-            index
-          ].isImageUpdated = true;
-        }
+        reader.onload = function (f) {
+          if (type === "option") {
+            self.langs[langIndex].quizForm.options[index].image =
+              e.target.files[0];
 
+            document.getElementById("optionImage" + langIndex + index).src =
+              reader.result;
+            document.getElementById("optionImage" + index).value = name;
+          } else if (type === "edit") {
+            self.langs[langIndex].quizEditForm.questionImage.image =
+              e.target.files[0];
+            self.langs[langIndex].quizEditForm.questionImage.name = name;
+            self.langs[langIndex].quizEditForm.isQuestionImageUpdated = true;
+          } else if (type === "editOption") {
+            self.langs[langIndex].quizEditForm.options[index].image =
+              e.target.files[0];
+            document.getElementById("editOptionImage" + index).value = name;
+            self.langs[langIndex].quizEditForm.options[
+              index
+            ].isImageUpdated = true;
+          } else {
+            self.langs[langIndex].quizForm.questionImage.image =
+              e.target.files[0];
+            self.langs[langIndex].quizForm.questionImage.name = name;
+            document.getElementById("questionImagePreview" + langIndex).src =
+              reader.result;
+            // self.langs[langIndex].quizEditForm.options[
+            //   index
+            // ].isImageUpdated = true;
+          }
+        };
         self.documentNameKey++;
+        // e.target.value = ''
       }
     },
     removeOption(index, type, langIndex) {
@@ -2159,8 +2208,6 @@ export default {
           });
         });
     },
-    // });
-    // },
   },
 };
 </script>
@@ -2217,12 +2264,26 @@ export default {
   top: 5px;
   right: 5px;
 }
+
+.audioUpload {
+  font-size: 4rem;
+  opacity: 0;
+  z-index: 10;
+}
+
+.imageUpload {
+  font-size: 6rem;
+  opacity: 0;
+  z-index: 10;
+}
+
 .addVideoBtn,
 .addPointsBtn,
 .addQuestionBtn,
 .addOptionBtn {
   border-radius: 29px;
   padding: 10px 30px;
+  z-index: 9;
 }
 
 .addOptionCard {
@@ -2253,11 +2314,12 @@ export default {
     padding-right: 37%;
     top: 0;
     left: 0;
+    cursor: pointer;
   }
   .addQuestionBtn {
     height: 100%;
     width: 35%;
-    z-index: 99;
+    z-index: 9;
     border-radius: 5px;
   }
 }
@@ -2277,7 +2339,7 @@ export default {
   .addQuestionBtn {
     height: 100%;
     width: 35%;
-    z-index: 99;
+    z-index: 9;
     border-radius: 5px;
   }
 }

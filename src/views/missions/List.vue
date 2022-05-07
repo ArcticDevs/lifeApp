@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-breadcrumb class="breadcrumb-slash" :items="items" />
-    <div class="m-2">
+    <div class="m-2" v-if="missions">
       <!-- List Top -->
       <div class="row">
         <div
@@ -16,7 +16,17 @@
                 alt=""
                 class="mission_icon"
               />
-              <h3 class="mt-2">{{ mission.name }}</h3>
+              <h3 class="mt-2">
+                {{
+                  mission.translations.hasOwnProperty("En")
+                    ? mission.translations.En.name
+                    : mission.translations.hasOwnProperty("Hi")
+                    ? mission.translations.Hi.name
+                    : mission.translations.hasOwnProperty("Mr")
+                    ? mission.translations.Mr.name
+                    : ""
+                }}
+              </h3>
             </b-card>
           </router-link>
         </div>
@@ -71,9 +81,8 @@ export default {
   },
   created() {
     axios
-      .get("/admin/v1/missions/list")
+      .get("/admin/v1/missions")
       .then((response) => {
-        console.log(response);
         this.missions = response.data.missions;
       })
       .catch((error) => {
