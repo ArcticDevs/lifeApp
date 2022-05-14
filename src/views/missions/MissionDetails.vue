@@ -508,18 +508,18 @@ export default {
 
             this.langs[1].missionName = this.mission.translations.Hi.name;
             this.langs[1].question =
-              this.mission.translations.Hi.question.title;
+              this.mission.translations.Hi.question?.title;
             this.langs[1].document.file =
-              this.mission.translations.Hi.question.media.url;
+              this.mission.translations.Hi.question?.media?.url;
             this.langs[1].document.name =
-              this.mission.translations.Hi.question.media.name;
+              this.mission.translations.Hi.question?.media?.name;
 
-            let images = [];
-            let length = this.mission.translations.Hi.images.length;
+            let images = [{}];
+            let length = this.mission.translations.Hi.images?.length;
             for (let i = 0; i < length; i++) {
               images.push({ img: null, name: "" });
             }
-            this.mission.translations.Hi.images.forEach((item, i) => {
+            this.mission.translations.Hi.images?.forEach((item, i) => {
               images[i].id = item.id;
               images[i].img = item.media.url;
               images[i].name = item.media.name;
@@ -551,7 +551,7 @@ export default {
           }
 
           let missionForm = {
-            SelectedMissionType: this.mission.type,
+            SelectedMissionType: this.mission.mission_type,
             brainCoins: this.mission.brain_point,
             heartCoins: this.mission.heart_point,
           };
