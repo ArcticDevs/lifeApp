@@ -210,7 +210,7 @@
                               <!--          Remove Svg Icon-->
                               <svg
                                 v-show="lang.images.length > 1 && isEditable"
-                                @click="removeImage(index)"
+                                @click="removeImage(langIndex, index)"
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
                                 width="24"
@@ -514,7 +514,7 @@ export default {
             this.langs[1].document.name =
               this.mission.translations.Hi.question?.media?.name;
 
-            let images = [{}];
+            let images = [];
             let length = this.mission.translations.Hi.images?.length;
             for (let i = 0; i < length; i++) {
               images.push({ img: null, name: "" });
@@ -562,54 +562,121 @@ export default {
           console.log(error);
         });
     },
+    urlencodeFormData(fd) {
+      var s = "";
+      function encode(s) {
+        return encodeURIComponent(s).replace(/%20/g, "+");
+      }
+      for (var pair of fd.entries()) {
+        if (typeof pair[1] == "string") {
+          s += (s ? "&" : "") + encode(pair[0]) + "=" + encode(pair[1]);
+        }
+      }
+      return s;
+    },
     onSubmit() {
-      var postData = new FormData();
-      postData.append("brain_points", this.missionForm.brainCoins);
-      postData.append("heart_points", this.missionForm.heartCoins);
-      postData.append("mission_type", this.missionForm.SelectedMissionType);
+      const self = this;
 
-      this.langs.forEach((lang) => {
+      // update mission name, type and coins
+      let missionPutData = {
+        brain_points: self.missionForm.brainCoins,
+        heart_points: self.missionForm.heartCoins,
+        mission_type: self.missionForm.SelectedMissionType,
+      };
+      self.langs.forEach((lang) => {
         if (lang.missionName != "") {
-          postData.append(
-            `translations[${lang.code}][question][title]`,
-            lang.question
-          );
-          if (lang.isQuestionDocumentUpdated) {
-            postData.append(
-              `translations[${lang.code}][question][document]`,
-              lang.document.file
-            );
+          if (!missionPutData["translations"]) {
+            missionPutData["translations"] = {};
           }
-          postData.append(`translations[${lang.code}][name]`, lang.missionName);
-          lang.newImages.forEach((image, i) => {
-            if (image.img)
-              postData.append(
-                `translations[${lang.code}][images][]`,
-                image.img
-              );
-          });
+
+          if (!missionPutData["translations"][`${lang.code}`]) {
+            missionPutData["translations"][`${lang.code}`] = {};
+          }
+
+          if (!missionPutData["translations"][`${lang.code}`]["name"]) {
+            missionPutData["translations"][`${lang.code}`]["name"] = "";
+          }
+
+          missionPutData["translations"][`${lang.code}`]["name"] =
+            lang.missionName;
         }
       });
-
-      // for (var pair of postData.entries()) {
-      //   console.log(pair[0] + " -> " + pair[1]);
-      // }
-
-      // mission update API here
       axios
-        .put(`/admin/v1/missions/${this.missionId}`, postData)
-        .then((data) => {
-          this.isEditable = false;
-          this.langs.forEach((lang) => {
-            lang.isQuestionDocumentUpdated = false;
-            lang.areImagesUpdated = false;
+        .put(`/admin/v1/missions/${self.missionId}`, missionPutData)
+        .then(({ data }) => {
+          // update mission question and document
+          let postQuestionData = new FormData();
+          self.langs.forEach((lang) => {
+            if (lang.question != "") {
+              postQuestionData.append(`locale`, lang.code);
+              postQuestionData.append(`title`, lang.question);
+              if (lang.isQuestionDocumentUpdated) {
+                postQuestionData.append(`document`, lang.document.file);
+              }
+            }
           });
-          this.getMission();
+
+          axios
+            .post(
+              `/admin/v1/missions/${self.missionId}/questions`,
+              postQuestionData
+            )
+            .then(({ data }) => {
+              // update mission images
+              let postImageData = new FormData();
+              self.langs.forEach((lang) => {
+                if (lang.missionName != "") {
+                  lang.newImages.forEach((image, i) => {
+                    if (image.img && !postImageData.get("locale")) {
+                      postImageData.append(`locale`, lang.code);
+                      postImageData.append(`image`, image.img);
+                    } else if (image.img) {
+                      postImageData.append(`image`, image.img);
+                    }
+                  });
+                }
+              });
+              if (!postImageData.entries().next().value) {
+                self.isEditable = false;
+                self.langs.forEach((lang) => {
+                  lang.isQuestionDocumentUpdated = false;
+                  lang.areImagesUpdated = false;
+                });
+                self.getMission();
+              } else {
+                axios
+                  .post(
+                    `/admin/v1/missions/${self.missionId}/images`,
+                    postImageData
+                  )
+                  .then(({ data }) => {
+                    self.isEditable = false;
+                    self.langs.forEach((lang) => {
+                      lang.isQuestionDocumentUpdated = false;
+                      lang.areImagesUpdated = false;
+                    });
+                    self.getMission();
+                  })
+                  .catch((err) => {
+                    self.$swal({
+                      title: "Some error occurred while adding images",
+                      text: "Please try again",
+                      icon: "error",
+                    });
+                  });
+              }
+            })
+            .catch((resp) => {
+              self.$swal({
+                title: "Some error occurred while updating question",
+                text: "Please try again",
+                icon: "error",
+              });
+            });
         })
         .catch((error) => {
-          console.error(error);
-          this.$swal({
-            title: "Some error occurred",
+          self.$swal({
+            title: "Some error occurred while updating mission details",
             text: "Please try again",
             icon: "error",
           });
@@ -638,49 +705,53 @@ export default {
       this.langs[langIndex].newImages.push({});
     },
     removeImage(langIndex, index) {
-      this.$swal({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        customClass: {
-          confirmButton: "mr-2",
-        },
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // console.log(this.missionForm.images);
-          let imageId = this.langs[langIndex].images[index].id;
-          if (imageId) {
-            axios
-              .get(`/admin/v1/mission-images/${imageId}`)
-              .then(({ data }) => {
-                this.$bvToast.show("image-delete-toast");
-                if (this.images.length === 1) {
-                  this.langs[langIndex].images = [{}];
-                  this.langs[langIndex].newImages = [{}];
-                } else {
-                  // this.missionForm.images.splice(index, 1);
-                  this.langs[langIndex].newImages.splice(index, 1);
-                }
-                this.imageNameKey++;
-              })
-              .catch((resp) => {
-                console.error(resp);
-                this.$swal(
-                  "Error!",
-                  "Some error occurred. Please try again",
-                  "error"
-                );
-              });
-          } else {
-            this.langs[langIndex].images.splice(index, 1);
-            this.langs[langIndex].newImages.splice(index, 1);
+      if (Object.keys(this.langs[langIndex].images[index]).length === 0) {
+        this.langs[langIndex].newImages.splice(index, 1);
+        this.langs[langIndex].images.splice(index, 1);
+      } else {
+        this.$swal({
+          title: "Are you sure?",
+          text: "You won't be able to revert this!",
+          icon: "warning",
+          showCancelButton: true,
+          customClass: {
+            confirmButton: "mr-2",
+          },
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes, delete it!",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            let imageId = this.langs[langIndex].images[index].id;
+            if (imageId) {
+              axios
+                .delete(`/admin/v1/mission-images/${imageId}`)
+                .then(({ data }) => {
+                  this.$bvToast.show("image-delete-toast");
+                  if (this.images.length === 1) {
+                    this.langs[langIndex].images = [{}];
+                    this.langs[langIndex].newImages = [{}];
+                  } else {
+                    this.langs[langIndex].images.splice(index, 1);
+                    this.langs[langIndex].newImages.splice(index, 1);
+                  }
+                  this.imageNameKey++;
+                })
+                .catch((resp) => {
+                  console.error(resp);
+                  this.$swal(
+                    "Error!",
+                    "Some error occurred. Please try again",
+                    "error"
+                  );
+                });
+            } else {
+              this.langs[langIndex].images.splice(index, 1);
+              this.langs[langIndex].newImages.splice(index, 1);
+            }
           }
-        }
-      });
+        });
+      }
     },
     onDocumentSelected(e, langIndex) {
       let self = this;
