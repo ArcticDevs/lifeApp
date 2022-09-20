@@ -33,7 +33,7 @@ import store from './store'
 
 
 // axios.defaults.baseURL = "https://dev.floto.in"
-axios.defaults.baseURL = "https://stg.gappubobo.com"
+axios.defaults.baseURL = "https://gappubobo.com"
 
 // axios.defaults.timeout = 3000;
 // Add a request interceptor

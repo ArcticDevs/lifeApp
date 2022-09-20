@@ -3,8 +3,8 @@ export default {
   // loginEndpoint: 'http://localhost/lifeapp-api/api/admin/login',
   // registerEndpoint: 'https://dev.floto.in/lifeapp-api/api/admin/register',
   // loginEndpoint: 'https://dev.floto.in/api/admin/login',
-  loginEndpoint: 'https://stg.gappubobo.com/api/admin/login',
-  registerEndpoint: 'https://stg.gappubobo.com/api/admin/register',
+  loginEndpoint: 'https://gappubobo.com/api/admin/login',
+  registerEndpoint: 'https://gappubobo.com/api/admin/register',
   refreshEndpoint: '/jwt/refresh-token',
   logoutEndpoint: '/jwt/logout',
 
